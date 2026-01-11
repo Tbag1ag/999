@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { MarketInsight, Category, CompletionStatus, SortMode, JournalEntry, EntryType, AppNotification } from './types';
 import { CATEGORIES, INITIAL_INSIGHTS } from './constants';
 import MarketCard from './components/MarketCard';
@@ -7,8 +7,6 @@ import InsightForm from './components/InsightForm';
 import JournalSection from './components/JournalSection';
 import JournalForm from './components/JournalForm';
 import NotificationCenter from './components/NotificationCenter';
-import AiSummaryModal from './components/AiSummaryModal';
-import { generateMarketSummary } from './services/geminiService';
 import { sql, initDatabase } from './services/dbService';
 import { 
   Plus, 
@@ -17,9 +15,7 @@ import {
   Search, 
   Lock,
   KeyRound,
-  Sparkles,
-  Clock,
-  ChevronRight,
+  Zap,
   Filter
 } from 'lucide-react';
 
@@ -37,17 +33,17 @@ const LoginModal: React.FC<{ isOpen: boolean; onClose: () => void; onVerify: (pw
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-[#12141c]/80 backdrop-blur-xl animate-in fade-in duration-300">
-      <div className="bg-white rounded-[2.5rem] p-10 w-full max-w-sm shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-300">
+      <div className="bg-white rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 w-[90%] max-w-sm shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-300">
         <div className="flex flex-col items-center text-center space-y-6">
           <div className="w-16 h-16 bg-amber-100 rounded-3xl flex items-center justify-center text-amber-600"><KeyRound className="w-8 h-8" /></div>
           <div>
-            <h3 className="text-2xl font-black text-gray-900 tracking-tight">管理模式解锁</h3>
-            <p className="text-gray-400 font-bold text-sm mt-1 uppercase tracking-widest">请输入身份密钥以继续</p>
+            <h3 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">管理模式解锁</h3>
+            <p className="text-gray-400 font-bold text-[10px] sm:text-sm mt-1 uppercase tracking-widest">请输入身份密钥以继续</p>
           </div>
-          <input ref={inputRef} type="password" value={pwd} onChange={(e) => setPwd(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && onVerify(pwd)} placeholder="••••" className="w-full bg-gray-50 border-2 border-transparent focus:border-amber-400 focus:bg-white p-5 rounded-2xl text-center text-2xl font-black tracking-[1em] outline-none transition-all placeholder:tracking-normal placeholder:text-sm placeholder:font-bold" />
+          <input ref={inputRef} type="password" value={pwd} onChange={(e) => setPwd(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && onVerify(pwd)} placeholder="••••" className="w-full bg-gray-50 border-2 border-transparent focus:border-amber-400 focus:bg-white p-4 sm:p-5 rounded-2xl text-center text-xl sm:text-2xl font-black tracking-[1em] outline-none transition-all placeholder:tracking-normal placeholder:text-sm placeholder:font-bold" />
           <div className="flex gap-3 w-full">
-            <button onClick={onClose} className="flex-1 py-4 px-6 rounded-2xl border border-gray-100 text-gray-400 font-black text-sm hover:bg-gray-50 transition-colors">取消</button>
-            <button onClick={() => onVerify(pwd)} className="flex-1 py-4 px-6 rounded-2xl bg-[#12141c] text-white font-black text-sm hover:scale-105 active:scale-95 transition-all shadow-xl shadow-gray-200">确认解锁</button>
+            <button onClick={onClose} className="flex-1 py-3 sm:py-4 px-4 rounded-2xl border border-gray-100 text-gray-400 font-black text-sm hover:bg-gray-50 transition-colors">取消</button>
+            <button onClick={() => onVerify(pwd)} className="flex-1 py-3 sm:py-4 px-4 rounded-2xl bg-[#12141c] text-white font-black text-sm hover:scale-105 active:scale-95 transition-all shadow-xl shadow-gray-200">确认解锁</button>
           </div>
         </div>
       </div>
@@ -70,10 +66,6 @@ const App: React.FC = () => {
   const [editingJournal, setEditingJournal] = useState<JournalEntry | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState('');
   
-  const [showAiModal, setShowAiModal] = useState(false);
-  const [aiSummary, setAiSummary] = useState('');
-  const [isAiLoading, setIsAiLoading] = useState(false);
-  
   const [isAdmin, setIsAdmin] = useState(() => localStorage.getItem('is_admin') === 'true');
   const [clickCount, setClickCount] = useState(0);
 
@@ -90,23 +82,15 @@ const App: React.FC = () => {
 
         if (insData) {
           const mapped = insData.map((item: any) => ({
-            id: item.id, 
-            symbol: item.symbol, 
-            category: item.category, 
-            status: item.status,
-            focusPoints: item.focus_points, 
-            strategy: item.strategy, 
-            entryLevel: item.entry_level, // 已修复映射：之前是 entry_level
-            updatedAt: Number(item.updated_at), 
-            completionStatus: item.completion_status
+            id: item.id, symbol: item.symbol, category: item.category, status: item.status,
+            focusPoints: item.focus_points, strategy: item.strategy, entryLevel: item.entry_level,
+            updatedAt: Number(item.updated_at), completionStatus: item.completion_status
           }));
           setInsights(mapped);
-          localStorage.setItem('local_insights', JSON.stringify(mapped));
         }
         if (jrData) {
           const mappedJr = jrData.map((j: any) => ({ ...j, date: Number(j.date) }));
           setJournals(mappedJr);
-          localStorage.setItem('local_journals', JSON.stringify(mappedJr));
         }
         if (noteData) {
           const mappedNotes = noteData.map((n: any) => ({
@@ -114,25 +98,40 @@ const App: React.FC = () => {
             timestamp: Number(n.timestamp), isRead: n.is_read, type: n.type
           }));
           setNotifications(mappedNotes);
-          localStorage.setItem('local_notifications', JSON.stringify(mappedNotes));
         }
       } catch (e) {
-        console.error("Fetch error, fallback", e);
-        const sI = localStorage.getItem('local_insights');
-        if (sI) setInsights(JSON.parse(sI));
-        const sJ = localStorage.getItem('local_journals');
-        if (sJ) setJournals(JSON.parse(sJ));
+        console.error("Fetch error", e);
       }
     } else {
       const sI = localStorage.getItem('local_insights');
       setInsights(sI ? JSON.parse(sI) : INITIAL_INSIGHTS);
       const sJ = localStorage.getItem('local_journals');
       if (sJ) setJournals(JSON.parse(sJ));
+      const sN = localStorage.getItem('local_notifications');
+      if (sN) setNotifications(JSON.parse(sN));
     }
     setLoading(false);
   };
 
   useEffect(() => { fetchAllData(); }, []);
+
+  const addNotification = async (title: string, message: string, type: AppNotification['type']) => {
+    const newNote: AppNotification = {
+      id: Math.random().toString(36).substr(2, 9),
+      title, message, timestamp: Date.now(), isRead: false, type
+    };
+    if (sql) {
+      try {
+        await sql`
+          INSERT INTO notifications (id, title, message, timestamp, is_read, type)
+          VALUES (${newNote.id}, ${newNote.title}, ${newNote.message}, ${newNote.timestamp}, ${newNote.isRead}, ${newNote.type})
+        `;
+      } catch (e) { console.error("Notification DB Error", e); }
+    }
+    const updated = [newNote, ...notifications].slice(0, 50);
+    setNotifications(updated);
+    localStorage.setItem('local_notifications', JSON.stringify(updated));
+  };
 
   const onVerifyAdmin = (pwd: string) => {
     if (pwd === ADMIN_PASSWORD) {
@@ -146,6 +145,7 @@ const App: React.FC = () => {
   };
 
   const handleSaveInsight = async (data: Partial<MarketInsight>) => {
+    const isNew = !editingInsight;
     const id = editingInsight ? editingInsight.id : Math.random().toString(36).substr(2, 9);
     const newInsight: MarketInsight = {
       id, symbol: data.symbol || '', category: data.category || '美股', status: data.status || '震荡',
@@ -161,6 +161,7 @@ const App: React.FC = () => {
         `;
       } catch (e) { alert("同步失败"); return; }
     }
+    if (isNew) addNotification(`新增洞察: ${newInsight.symbol}`, `策略：${newInsight.strategy.substring(0, 30)}...`, 'market');
     const updated = editingInsight ? insights.map(i => i.id === id ? newInsight : i) : [newInsight, ...insights];
     setInsights(updated);
     localStorage.setItem('local_insights', JSON.stringify(updated));
@@ -168,17 +169,8 @@ const App: React.FC = () => {
     setEditingInsight(undefined);
   };
 
-  const handleDeleteInsight = async (id: string) => {
-    if (!window.confirm("确定删除这条记录吗？")) return;
-    if (sql) {
-      try { await sql`DELETE FROM insights WHERE id = ${id}`; } catch (e) { alert("删除失败"); return; }
-    }
-    const updated = insights.filter(i => i.id !== id);
-    setInsights(updated);
-    localStorage.setItem('local_insights', JSON.stringify(updated));
-  };
-
   const handleSaveJournal = async (data: Partial<JournalEntry>) => {
+    const isNew = !editingJournal;
     const id = editingJournal ? editingJournal.id : Math.random().toString(36).substr(2, 9);
     const newEntry: JournalEntry = {
       id, title: data.title || '', content: data.content || '', mood: data.mood || '冷静',
@@ -193,6 +185,7 @@ const App: React.FC = () => {
         `;
       } catch (e) { alert("同步失败"); return; }
     }
+    if (isNew) addNotification(`捕捉新动态: ${newEntry.type}`, newEntry.title || newEntry.content.substring(0, 30), newEntry.type as any);
     const updated = editingJournal ? journals.map(j => j.id === id ? newEntry : j) : [newEntry, ...journals];
     setJournals(updated.sort((a, b) => b.date - a.date));
     localStorage.setItem('local_journals', JSON.stringify(updated));
@@ -200,11 +193,17 @@ const App: React.FC = () => {
     setEditingJournal(undefined);
   };
 
+  const handleDeleteInsight = async (id: string) => {
+    if (!window.confirm("确定要删除这条观点吗？")) return;
+    if (sql) { try { await sql`DELETE FROM insights WHERE id = ${id}`; } catch (e) { alert("删除失败"); return; } }
+    const updated = insights.filter(i => i.id !== id);
+    setInsights(updated);
+    localStorage.setItem('local_insights', JSON.stringify(updated));
+  };
+
   const handleDeleteJournal = async (id: string) => {
-    if (!window.confirm("确定删除这条瀑布流记录吗？")) return;
-    if (sql) {
-      try { await sql`DELETE FROM journals WHERE id = ${id}`; } catch (e) { alert("删除失败"); return; }
-    }
+    if (!window.confirm("确定要删除这条记录吗？")) return;
+    if (sql) { try { await sql`DELETE FROM journals WHERE id = ${id}`; } catch (e) { alert("删除失败"); return; } }
     const updated = journals.filter(j => j.id !== id);
     setJournals(updated);
     localStorage.setItem('local_journals', JSON.stringify(updated));
@@ -226,26 +225,17 @@ const App: React.FC = () => {
   };
 
   const handleClearAllNotifications = async () => {
+    if (!window.confirm("确定清除所有消息通知吗？")) return;
     if (sql) { try { await sql`DELETE FROM notifications`; } catch (e) {} }
     setNotifications([]);
+    localStorage.removeItem('local_notifications');
   };
 
   const handleDeleteNotification = async (id: string) => {
     if (sql) { try { await sql`DELETE FROM notifications WHERE id = ${id}`; } catch (e) {} }
-    setNotifications(prev => prev.filter(n => n.id !== id));
-  };
-
-  const handleGenerateAiSummary = async () => {
-    setShowAiModal(true);
-    setIsAiLoading(true);
-    try {
-      const summary = await generateMarketSummary(insights);
-      setAiSummary(summary || 'AI 研判生成失败。');
-    } catch (error) {
-      setAiSummary('研判生成发生意外错误，请检查 API Key 配置。');
-    } finally {
-      setIsAiLoading(false);
-    }
+    const updated = notifications.filter(n => n.id !== id);
+    setNotifications(updated);
+    localStorage.setItem('local_notifications', JSON.stringify(updated));
   };
 
   const filteredInsights = useMemo(() => {
@@ -294,23 +284,23 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col selection:bg-amber-100 pb-20">
-      <header className="sticky top-0 z-[100] bg-white/80 backdrop-blur-2xl border-b border-gray-100 px-8 h-[72px]">
-        <div className="max-w-[1600px] mx-auto flex items-center justify-between h-full gap-8">
-          <div onClick={() => !isAdmin && setClickCount(c => c+1 >= 5 ? (setShowLogin(true), 0) : c+1)} className="flex items-center gap-3 shrink-0 cursor-pointer select-none active:scale-90 transition-transform">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${isAdmin ? 'bg-amber-500 shadow-xl shadow-amber-200 animate-pulse' : 'bg-[#12141c]'}`}>
-              <LayoutGrid className="w-5 h-5 text-white" />
+      <header className="sticky top-0 z-[100] bg-white/80 backdrop-blur-2xl border-b border-gray-100 px-4 sm:px-8 h-[72px]">
+        <div className="max-w-[1600px] mx-auto flex items-center justify-between h-full gap-4 sm:gap-8">
+          <div onClick={() => !isAdmin && setClickCount(c => c+1 >= 5 ? (setShowLogin(true), 0) : c+1)} className="flex items-center gap-2 sm:gap-3 shrink-0 cursor-pointer select-none active:scale-90 transition-transform">
+            <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition-all ${isAdmin ? 'bg-amber-500 shadow-xl shadow-amber-200 animate-pulse' : 'bg-[#12141c]'}`}>
+              <LayoutGrid className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <h1 className="text-xl font-black text-[#12141c] tracking-tighter">市场周刊</h1>
+            <h1 className="text-lg sm:text-xl font-black text-[#12141c] tracking-tighter">市场周刊</h1>
           </div>
           
           <div className="flex-grow flex items-center gap-4 max-w-3xl">
             <div className="relative group flex-grow">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
-              <input type="text" className="w-full bg-gray-100/60 border border-transparent focus:bg-white focus:border-gray-200 py-3 pl-11 pr-10 rounded-2xl text-[14px] font-bold outline-none transition-all placeholder:text-gray-400" placeholder="搜索观点或代码..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+              <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+              <input type="text" className="w-full bg-gray-100/60 border border-transparent focus:bg-white focus:border-gray-200 py-2 sm:py-3 pl-9 sm:pl-11 pr-4 sm:pr-10 rounded-2xl text-[13px] sm:text-[14px] font-bold outline-none transition-all placeholder:text-gray-400" placeholder="搜索..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
             </div>
           </div>
 
-          <div className="flex items-center gap-4 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
             <NotificationCenter 
               notifications={notifications} 
               onMarkAsRead={handleMarkAsRead} 
@@ -318,34 +308,35 @@ const App: React.FC = () => {
               onDelete={handleDeleteNotification} 
             />
             {isAdmin && (
-              <div className="flex items-center gap-3 pl-4 border-l border-gray-100">
-                <button onClick={() => sortMode === 'journal' ? setShowJournalForm(true) : setShowForm(true)} className="bg-[#12141c] text-white flex items-center gap-2 px-5 py-2.5 rounded-full hover:scale-105 transition-all shadow-xl shadow-gray-200">
+              <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l border-gray-100">
+                <button onClick={() => sortMode === 'journal' ? setShowJournalForm(true) : setShowForm(true)} className="bg-[#12141c] text-white flex items-center gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-full hover:scale-105 transition-all shadow-xl shadow-gray-200">
                   <Plus className="w-4 h-4" />
-                  <span className="text-sm font-black">投递记录</span>
+                  <span className="hidden sm:inline text-sm font-black">投递</span>
                 </button>
-                <button onClick={() => { setIsAdmin(false); localStorage.removeItem('is_admin'); }} className="p-2.5 bg-red-50 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all"><Lock className="w-4 h-4" /></button>
+                <button onClick={() => { setIsAdmin(false); localStorage.removeItem('is_admin'); }} className="p-2 sm:p-2.5 bg-red-50 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all"><Lock className="w-4 h-4" /></button>
               </div>
             )}
           </div>
         </div>
       </header>
 
-      <div className="max-w-[1600px] mx-auto px-8 py-12 w-full flex flex-col lg:flex-row gap-16">
-        <aside className="lg:w-64 space-y-12 shrink-0">
-          <div className="sticky top-[104px] space-y-10">
-            <div>
-              <div className="space-y-1">
-                  <button onClick={() => setSortMode('category')} className={`w-full text-left px-4 py-3.5 rounded-2xl text-[14px] font-black flex items-center gap-3 ${sortMode !== 'journal' ? 'bg-[#12141c] text-white shadow-xl shadow-gray-200' : 'text-gray-500 hover:bg-gray-100'}`}>
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-8 py-8 sm:py-12 w-full flex flex-col lg:flex-row gap-8 lg:gap-16">
+        <aside className="lg:w-64 space-y-8 lg:space-y-12 shrink-0">
+          <div className="lg:sticky lg:top-[104px] space-y-6 lg:space-y-10">
+            {/* 移动端水平导航菜单 */}
+            <div className="overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
+              <div className="flex lg:flex-col gap-2 min-w-max lg:min-w-0">
+                  <button onClick={() => setSortMode('category')} className={`px-5 lg:px-4 py-2.5 lg:py-3.5 rounded-2xl text-[13px] sm:text-[14px] font-black flex items-center gap-3 transition-all ${sortMode !== 'journal' ? 'bg-[#12141c] text-white shadow-xl shadow-gray-200' : 'text-gray-500 hover:bg-gray-100 bg-gray-50/50'}`}>
                     <LayoutGrid className="w-4 h-4" /> 每日洞察
                   </button>
-                  <button onClick={() => setSortMode('journal')} className={`w-full text-left px-4 py-3.5 rounded-2xl text-[14px] font-black flex items-center gap-3 ${sortMode === 'journal' ? 'bg-amber-500 text-white shadow-xl shadow-amber-200' : 'text-gray-500 hover:bg-gray-100'}`}>
-                    <Sparkles className="w-4 h-4" /> 信息捕捉瀑布流
+                  <button onClick={() => setSortMode('journal')} className={`px-5 lg:px-4 py-2.5 lg:py-3.5 rounded-2xl text-[13px] sm:text-[14px] font-black flex items-center gap-3 transition-all ${sortMode === 'journal' ? 'bg-amber-500 text-white shadow-xl shadow-amber-200' : 'text-gray-500 hover:bg-gray-100 bg-gray-50/50'}`}>
+                    <Zap className="w-4 h-4" /> 信息捕捉瀑布流
                   </button>
               </div>
             </div>
             
             {(sortMode !== 'journal') && (
-              <div>
+              <div className="hidden lg:block">
                 <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2"><CalendarDays className="w-3.5 h-3.5" /> 历史回溯</h3>
                 <div className="space-y-1">
                   <button onClick={() => setSelectedMonth(null)} className={`w-full text-left px-4 py-3.5 rounded-2xl text-[14px] font-black flex items-center justify-between ${selectedMonth === null ? 'bg-gray-200 text-gray-900' : 'text-gray-500 hover:bg-gray-100'}`}>
@@ -365,29 +356,19 @@ const App: React.FC = () => {
         </aside>
 
         <main className="flex-grow">
-          <div className="mb-12">
-            <div className="flex justify-between items-end mb-10">
-              <h2 className="text-6xl font-black text-[#12141c] tracking-tighter leading-tight italic">
-                {sortMode === 'journal' ? <>信息捕捉<br />瀑布流。</> : <>追踪行情，<br />每日洞察。</>}
-              </h2>
-              {sortMode !== 'journal' && insights.length > 0 && (
-                <button 
-                  onClick={handleGenerateAiSummary}
-                  className="mb-2 flex items-center gap-2 px-6 py-3 bg-amber-50 text-amber-600 rounded-2xl hover:bg-amber-100 transition-all text-sm font-black border border-amber-100 shadow-sm"
-                >
-                  <Sparkles className="w-4 h-4" /> AI 宏观研判
-                </button>
-              )}
-            </div>
+          <div className="mb-8 sm:mb-12">
+            <h2 className="text-4xl sm:text-6xl font-black text-[#12141c] tracking-tighter leading-tight italic mb-6 sm:mb-10">
+              {sortMode === 'journal' ? <>信息捕捉<br className="hidden sm:block" />瀑布流。</> : <>追踪行情，<br className="hidden sm:block" />每日洞察。</>}
+            </h2>
 
             {sortMode !== 'journal' && (
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pb-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-4">
                 <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar w-full sm:w-auto">
                   {CATEGORIES.map(cat => (
                     <button
                       key={cat}
                       onClick={() => setActiveCategory(cat)}
-                      className={`px-5 py-2.5 rounded-full text-[13px] font-black whitespace-nowrap transition-all ${
+                      className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-[12px] sm:text-[13px] font-black whitespace-nowrap transition-all ${
                         activeCategory === cat 
                           ? 'bg-[#12141c] text-white shadow-xl shadow-gray-200' 
                           : 'bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-900'
@@ -398,16 +379,16 @@ const App: React.FC = () => {
                   ))}
                 </div>
 
-                <div className="flex items-center p-1.5 bg-gray-100 rounded-[1.25rem] shrink-0">
+                <div className="flex items-center p-1.5 bg-gray-100 rounded-[1.25rem] shrink-0 self-end sm:self-auto">
                    <button 
                      onClick={() => setSortMode('category')}
-                     className={`flex items-center gap-2 px-6 py-2.5 rounded-[1rem] text-[14px] font-black transition-all ${sortMode === 'category' ? 'bg-white text-gray-900 shadow-[0_4px_12px_rgba(0,0,0,0.08)]' : 'text-gray-400 hover:text-gray-600'}`}
+                     className={`flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-2.5 rounded-[1rem] text-[12px] sm:text-[14px] font-black transition-all ${sortMode === 'category' ? 'bg-white text-gray-900 shadow-[0_4px_12px_rgba(0,0,0,0.08)]' : 'text-gray-400 hover:text-gray-600'}`}
                    >
                      <Filter className="w-4 h-4" /> 类别
                    </button>
                    <button 
                      onClick={() => setSortMode('timeline')}
-                     className={`flex items-center gap-2 px-6 py-2.5 rounded-[1rem] text-[14px] font-black transition-all ${sortMode === 'timeline' ? 'bg-white text-gray-900 shadow-[0_4px_12px_rgba(0,0,0,0.08)]' : 'text-gray-400 hover:text-gray-600'}`}
+                     className={`flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-2.5 rounded-[1rem] text-[12px] sm:text-[14px] font-black transition-all ${sortMode === 'timeline' ? 'bg-white text-gray-900 shadow-[0_4px_12px_rgba(0,0,0,0.08)]' : 'text-gray-400 hover:text-gray-600'}`}
                    >
                      <CalendarDays className="w-4 h-4" /> 时间
                    </button>
@@ -419,27 +400,22 @@ const App: React.FC = () => {
           {sortMode === 'journal' ? (
             <JournalSection entries={journals} isAdmin={isAdmin} onEdit={(j) => { setEditingJournal(j); setShowJournalForm(true); }} onDelete={handleDeleteJournal} />
           ) : (
-            <div className="space-y-24">
+            <div className="space-y-16 sm:space-y-24">
               {groupedInsights.map(([groupLabel, groupItems]) => (
                 <section key={groupLabel}>
-                  <div className="flex items-center gap-6 mb-12">
-                    <span className="text-[14px] font-black tracking-widest uppercase bg-[#12141c] text-white px-6 py-2 rounded-2xl">{groupLabel}</span>
+                  <div className="flex items-center gap-4 sm:gap-6 mb-8 sm:mb-12">
+                    <span className="text-[12px] sm:text-[14px] font-black tracking-widest uppercase bg-[#12141c] text-white px-4 sm:px-6 py-1.5 sm:py-2 rounded-2xl">{groupLabel}</span>
                     <div className="flex-grow h-[1px] bg-gray-100" />
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-10">
                     {groupItems.map(i => <MarketCard key={i.id} insight={i} onEdit={(ins) => { setEditingInsight(ins); setShowForm(true); }} onDelete={handleDeleteInsight} onToggleCompletion={handleToggleCompletionStatus} isEditable={isAdmin} />)}
                   </div>
                 </section>
               ))}
-              {archivedItems.length > 0 && groupedInsights.length === 0 && (
-                <div className="text-center py-20">
-                   <p className="text-gray-400 font-bold italic">该筛选条件下暂无正在进行的行情。</p>
-                </div>
-              )}
               {archivedItems.length > 0 && (
-                <div className="mt-40 pt-20 border-t border-gray-100 opacity-50 hover:opacity-100 transition-opacity">
-                   <h3 className="text-2xl font-black mb-12 italic">历史已归档</h3>
-                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
+                <div className="mt-24 sm:mt-40 pt-12 sm:pt-20 border-t border-gray-100 opacity-50 hover:opacity-100 transition-opacity">
+                   <h3 className="text-xl sm:text-2xl font-black mb-8 sm:mb-12 italic">历史已归档</h3>
+                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-10">
                     {archivedItems.map(i => <MarketCard key={i.id} insight={i} onEdit={(ins) => { setEditingInsight(ins); setShowForm(true); }} onDelete={handleDeleteInsight} onToggleCompletion={handleToggleCompletionStatus} isEditable={isAdmin} />)}
                   </div>
                 </div>
@@ -451,7 +427,6 @@ const App: React.FC = () => {
 
       {showForm && isAdmin && <InsightForm initialData={editingInsight} onSave={handleSaveInsight} onCancel={() => { setShowForm(false); setEditingInsight(undefined); }} />}
       {showJournalForm && isAdmin && <JournalForm initialData={editingJournal} onSave={handleSaveJournal} onCancel={() => { setShowJournalForm(false); setEditingJournal(undefined); }} />}
-      {showAiModal && <AiSummaryModal content={aiSummary} isLoading={isAiLoading} onClose={() => setShowAiModal(false)} />}
       <LoginModal isOpen={showLogin} onClose={() => setShowLogin(false)} onVerify={onVerifyAdmin} />
     </div>
   );

@@ -21,7 +21,10 @@ import {
   Filter,
   Sun,
   Moon,
-  Thermometer
+  Thermometer,
+  ArrowUpDown,
+  SortAsc,
+  SortDesc
 } from 'lucide-react';
 
 const ADMIN_PASSWORD = "8888"; 
@@ -65,6 +68,7 @@ const App: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<Category>('全部');
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [sortMode, setSortMode] = useState<SortMode>('feargreed');
+  const [fgSortOrder, setFgSortOrder] = useState<'default' | 'asc' | 'desc'>('default');
   const [showForm, setShowForm] = useState(false);
   const [showJournalForm, setShowJournalForm] = useState(false);
   const [showIndexForm, setShowIndexForm] = useState(false);
@@ -343,6 +347,17 @@ const App: React.FC = () => {
     return result;
   }, [journals, selectedMonth, searchQuery]);
 
+  // 对恐慌贪婪指数进行实时排序
+  const sortedIndices = useMemo(() => {
+    let result = [...indices];
+    if (fgSortOrder === 'asc') {
+      return result.sort((a, b) => a.score - b.score);
+    } else if (fgSortOrder === 'desc') {
+      return result.sort((a, b) => b.score - a.score);
+    }
+    return result; // 默认按更新时间
+  }, [indices, fgSortOrder]);
+
   const { activeItems, archivedItems } = useMemo(() => ({
     activeItems: filteredInsights.filter(i => i.completionStatus === '进行中'),
     archivedItems: filteredInsights.filter(i => i.completionStatus !== '进行中')
@@ -490,6 +505,34 @@ const App: React.FC = () => {
                : <>追踪行情，<br className="hidden sm:block" />每日洞察。</>}
             </h2>
 
+            {sortMode === 'feargreed' && (
+              <div className="flex items-center gap-4 mb-10 overflow-x-auto no-scrollbar pb-2">
+                <span className="text-[11px] font-black text-gray-400 uppercase tracking-widest shrink-0 flex items-center gap-2">
+                  <ArrowUpDown className="w-3.5 h-3.5" /> 排序方式
+                </span>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => setFgSortOrder('default')}
+                    className={`px-5 py-2 rounded-full text-[12px] font-black transition-all whitespace-nowrap ${fgSortOrder === 'default' ? 'bg-[#12141c] dark:bg-amber-500 text-white shadow-lg' : 'bg-gray-100 dark:bg-white/5 text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+                  >
+                    默认 (时间)
+                  </button>
+                  <button 
+                    onClick={() => setFgSortOrder('asc')}
+                    className={`px-5 py-2 rounded-full text-[12px] font-black transition-all whitespace-nowrap flex items-center gap-2 ${fgSortOrder === 'asc' ? 'bg-[#12141c] dark:bg-amber-500 text-white shadow-lg' : 'bg-gray-100 dark:bg-white/5 text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+                  >
+                    <SortAsc className="w-3.5 h-3.5" /> 分值由低到高
+                  </button>
+                  <button 
+                    onClick={() => setFgSortOrder('desc')}
+                    className={`px-5 py-2 rounded-full text-[12px] font-black transition-all whitespace-nowrap flex items-center gap-2 ${fgSortOrder === 'desc' ? 'bg-[#12141c] dark:bg-amber-500 text-white shadow-lg' : 'bg-gray-100 dark:bg-white/5 text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+                  >
+                    <SortDesc className="w-3.5 h-3.5" /> 分值由高到低
+                  </button>
+                </div>
+              </div>
+            )}
+
             {sortMode !== 'journal' && sortMode !== 'feargreed' && (
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-4">
                 <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar w-full sm:w-auto">
@@ -529,7 +572,7 @@ const App: React.FC = () => {
           {sortMode === 'journal' ? (
             <JournalSection entries={filteredJournals} isAdmin={isAdmin} onEdit={(j) => { setEditingJournal(j); setShowJournalForm(true); }} onDelete={handleDeleteJournal} />
           ) : sortMode === 'feargreed' ? (
-            <FearGreedSection indices={indices} isAdmin={isAdmin} onEdit={(i) => { setEditingIndex(i); setShowIndexForm(true); }} onDelete={handleDeleteIndex} />
+            <FearGreedSection indices={sortedIndices} isAdmin={isAdmin} onEdit={(i) => { setEditingIndex(i); setShowIndexForm(true); }} onDelete={handleDeleteIndex} />
           ) : (
             <div className="space-y-16 sm:space-y-24">
               {groupedInsights.map(([groupLabel, groupItems]) => (

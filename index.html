@@ -4,23 +4,38 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>市场周刊 - YouMind Style</title>
+    <title>市场周刊</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+      }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
     <style>
+      /* 全局平滑过渡优化 */
+      *, *::before, *::after {
+        transition-property: background-color, border-color, color, fill, stroke, box-shadow;
+        transition-duration: 400ms;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
       body {
         font-family: 'Inter', sans-serif;
         background-color: #fbfbfb;
         color: #12141c;
+      }
+      .dark body {
+        background-color: #0f1117;
+        color: #f9f9f9;
       }
       .font-serif {
         font-family: 'Playfair+Display', serif;
       }
       .ai-glow {
         box-shadow: 0 0 20px rgba(255, 193, 7, 0.2);
-        transition: all 0.3s ease;
       }
       .ai-glow:hover {
         box-shadow: 0 0 30px rgba(255, 193, 7, 0.4);
@@ -37,6 +52,12 @@
       ::-webkit-scrollbar { width: 6px; }
       ::-webkit-scrollbar-track { background: transparent; }
       ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+      .dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); }
+      
+      /* 禁用特定元素的过渡以保证性能 */
+      .no-transition {
+        transition: none !important;
+      }
     </style>
   <script type="importmap">
 {
@@ -56,6 +77,6 @@
 </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
+  <script type="module" src="/index.tsx"></script>
 </body>
 </html>

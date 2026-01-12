@@ -96,9 +96,9 @@ const InsightForm: React.FC<InsightFormProps> = ({ initialData, onSave, onCancel
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">代码</label>
               <input
                 required
-                className="w-full p-3.5 bg-gray-50 border border-transparent focus:bg-white focus:border-gray-900 rounded-2xl outline-none transition-all text-sm font-black"
+                className="w-full p-3.5 bg-gray-50 border border-transparent focus:bg-white focus:border-gray-900 rounded-2xl outline-none transition-all text-sm font-black uppercase"
                 value={formData.symbol}
-                onChange={(e) => setFormData({ ...formData, symbol: e.target.value.toUpperCase() })}
+                onChange={(e) => setFormData({ ...formData, symbol: e.target.value })}
                 placeholder="BTC"
               />
             </div>

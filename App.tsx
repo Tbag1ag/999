@@ -1,11 +1,13 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { MarketInsight, Category, CompletionStatus, SortMode, JournalEntry, EntryType, AppNotification } from './types';
+import { MarketInsight, Category, CompletionStatus, SortMode, JournalEntry, EntryType, AppNotification, FearGreedIndex } from './types';
 import { CATEGORIES, INITIAL_INSIGHTS } from './constants';
 import MarketCard from './components/MarketCard';
 import InsightForm from './components/InsightForm';
 import JournalSection from './components/JournalSection';
 import JournalForm from './components/JournalForm';
+import FearGreedSection from './components/FearGreedSection';
+import IndexForm from './components/IndexForm';
 import NotificationCenter from './components/NotificationCenter';
 import { sql, initDatabase } from './services/dbService';
 import { 
@@ -18,7 +20,8 @@ import {
   Zap,
   Filter,
   Sun,
-  Moon
+  Moon,
+  Thermometer
 } from 'lucide-react';
 
 const ADMIN_PASSWORD = "8888"; 
@@ -56,16 +59,19 @@ const LoginModal: React.FC<{ isOpen: boolean; onClose: () => void; onVerify: (pw
 const App: React.FC = () => {
   const [insights, setInsights] = useState<MarketInsight[]>([]);
   const [journals, setJournals] = useState<JournalEntry[]>([]);
+  const [indices, setIndices] = useState<FearGreedIndex[]>([]);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<Category>('全部');
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
-  const [sortMode, setSortMode] = useState<SortMode>('category');
+  const [sortMode, setSortMode] = useState<SortMode>('feargreed');
   const [showForm, setShowForm] = useState(false);
   const [showJournalForm, setShowJournalForm] = useState(false);
+  const [showIndexForm, setShowIndexForm] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [editingInsight, setEditingInsight] = useState<MarketInsight | undefined>(undefined);
   const [editingJournal, setEditingJournal] = useState<JournalEntry | undefined>(undefined);
+  const [editingIndex, setEditingIndex] = useState<FearGreedIndex | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState('');
   
   const [isAdmin, setIsAdmin] = useState(() => localStorage.getItem('is_admin') === 'true');
@@ -87,9 +93,10 @@ const App: React.FC = () => {
     if (sql) {
       try {
         await initDatabase();
-        const [insData, jrData, noteData] = await Promise.all([
+        const [insData, jrData, indexData, noteData] = await Promise.all([
           sql`SELECT * FROM insights ORDER BY updated_at DESC`,
           sql`SELECT * FROM journals ORDER BY date DESC`,
+          sql`SELECT * FROM indices ORDER BY updated_at DESC`,
           sql`SELECT * FROM notifications ORDER BY timestamp DESC LIMIT 50`
         ]);
 
@@ -104,6 +111,10 @@ const App: React.FC = () => {
         if (jrData) {
           const mappedJr = jrData.map((j: any) => ({ ...j, date: Number(j.date) }));
           setJournals(mappedJr);
+        }
+        if (indexData) {
+          const mappedIndices = indexData.map((a: any) => ({ ...a, updatedAt: Number(a.updated_at) }));
+          setIndices(mappedIndices);
         }
         if (noteData) {
           const mappedNotes = noteData.map((n: any) => ({
@@ -120,6 +131,8 @@ const App: React.FC = () => {
       setInsights(sI ? JSON.parse(sI) : INITIAL_INSIGHTS);
       const sJ = localStorage.getItem('local_journals');
       if (sJ) setJournals(JSON.parse(sJ));
+      const sIndex = localStorage.getItem('local_indices');
+      if (sIndex) setIndices(JSON.parse(sIndex));
       const sN = localStorage.getItem('local_notifications');
       if (sN) setNotifications(JSON.parse(sN));
     }
@@ -209,6 +222,54 @@ const App: React.FC = () => {
     setEditingJournal(undefined);
   };
 
+  const handleSaveIndex = async (data: Partial<FearGreedIndex>) => {
+    const isNew = !editingIndex;
+    const id = editingIndex ? editingIndex.id : Math.random().toString(36).substr(2, 9);
+    const newIndex: FearGreedIndex = {
+      id, symbol: data.symbol || '', score: data.score || 50, updatedAt: Date.now()
+    };
+    if (sql) {
+      try {
+        await sql`
+          INSERT INTO indices (id, symbol, score, updated_at)
+          VALUES (${newIndex.id}, ${newIndex.symbol}, ${newIndex.score}, ${newIndex.updatedAt})
+          ON CONFLICT (id) DO UPDATE SET symbol = EXCLUDED.symbol, score = EXCLUDED.score, updated_at = EXCLUDED.updated_at
+        `;
+      } catch (e) { alert("同步失败"); return; }
+    }
+    if (isNew) addNotification(`情绪指数更新: ${newIndex.symbol}`, `${newIndex.symbol} 当前分数: ${newIndex.score}`, 'index' as any);
+    setIndices(prev => {
+      const updated = editingIndex ? prev.map(i => i.id === id ? newIndex : i) : [newIndex, ...prev];
+      localStorage.setItem('local_indices', JSON.stringify(updated));
+      return updated;
+    });
+    setShowIndexForm(false);
+    setEditingIndex(undefined);
+  };
+
+  const handleDeleteIndex = async (id: string) => {
+    if (!window.confirm("确定要删除这条指数记录吗？")) return;
+    
+    let deleteSuccessful = true;
+    if (sql) { 
+      try { 
+        await sql`DELETE FROM indices WHERE id = ${id}`; 
+      } catch (e) { 
+        console.error("SQL Delete Index Error:", e);
+        alert("云端删除失败，请检查网络后重试。");
+        deleteSuccessful = false;
+      } 
+    }
+    
+    if (deleteSuccessful) {
+      setIndices(prev => {
+        const updated = prev.filter(a => a.id !== id);
+        localStorage.setItem('local_indices', JSON.stringify(updated));
+        return updated;
+      });
+    }
+  };
+
   const handleDeleteInsight = async (id: string) => {
     if (!window.confirm("确定要删除这条观点吗？")) return;
     if (sql) { try { await sql`DELETE FROM insights WHERE id = ${id}`; } catch (e) { alert("删除失败"); return; } }
@@ -220,15 +281,7 @@ const App: React.FC = () => {
   };
 
   const handleDeleteJournal = async (id: string) => {
-    if (sql) { 
-      try { 
-        await sql`DELETE FROM journals WHERE id = ${id}`; 
-      } catch (e) { 
-        console.error("Delete Error", e);
-        alert("删除失败"); 
-        return; 
-      } 
-    }
+    if (sql) { try { await sql`DELETE FROM journals WHERE id = ${id}`; } catch (e) { alert("删除失败"); return; } }
     setJournals(prev => {
       const updated = prev.filter(j => j.id !== id);
       localStorage.setItem('local_journals', JSON.stringify(updated));
@@ -278,7 +331,6 @@ const App: React.FC = () => {
     return result;
   }, [insights, activeCategory, selectedMonth, searchQuery]);
 
-  // 新增：瀑布流过滤逻辑
   const filteredJournals = useMemo(() => {
     let result = journals;
     if (searchQuery.trim()) {
@@ -314,10 +366,11 @@ const App: React.FC = () => {
     });
   }, [activeItems, sortMode]);
 
-  // 更新：timelineMonthGroups 逻辑，使其根据当前模式动态统计
   const timelineMonthGroups = useMemo(() => {
     const groups: { [key: string]: number } = {};
-    // 根据当前是洞察模式还是瀑布流模式选择统计源
+    // 恐慌贪婪模式下不计算月度历史
+    if (sortMode === 'feargreed') return [];
+    
     const data = sortMode === 'journal' ? journals : insights;
     data.forEach(i => {
       const timestamp = (i as any).date || (i as any).updatedAt;
@@ -328,7 +381,6 @@ const App: React.FC = () => {
     return Object.entries(groups).sort((a, b) => b[0].localeCompare(a[0]));
   }, [insights, journals, sortMode]);
 
-  // 辅助函数：切换模式时重置月份过滤
   const handleModeSwitch = (mode: SortMode) => {
     setSortMode(mode);
     setSelectedMonth(null);
@@ -373,7 +425,14 @@ const App: React.FC = () => {
             />
             {isAdmin && (
               <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l border-gray-100 dark:border-white/5">
-                <button onClick={() => sortMode === 'journal' ? setShowJournalForm(true) : setShowForm(true)} className="bg-[#12141c] dark:bg-amber-500 text-white flex items-center gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-full hover:scale-105 transition-all shadow-xl shadow-gray-200 dark:shadow-none">
+                <button 
+                  onClick={() => {
+                    if (sortMode === 'journal') setShowJournalForm(true);
+                    else if (sortMode === 'feargreed') setShowIndexForm(true);
+                    else setShowForm(true);
+                  }} 
+                  className="bg-[#12141c] dark:bg-amber-500 text-white flex items-center gap-2 px-3 sm:px-5 py-2.5 rounded-full hover:scale-105 transition-all shadow-xl shadow-gray-200 dark:shadow-none"
+                >
                   <Plus className="w-4 h-4" />
                   <span className="hidden sm:inline text-sm font-black">投递</span>
                 </button>
@@ -389,40 +448,49 @@ const App: React.FC = () => {
           <div className="lg:sticky lg:top-[104px] space-y-6 lg:space-y-10">
             <div className="overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
               <div className="flex lg:flex-col gap-2 min-w-max lg:min-w-0">
-                  <button onClick={() => handleModeSwitch('category')} className={`px-5 lg:px-4 py-2.5 lg:py-3.5 rounded-2xl text-[13px] sm:text-[14px] font-black flex items-center gap-3 transition-all ${sortMode !== 'journal' ? 'bg-[#12141c] dark:bg-amber-500 text-white shadow-xl shadow-gray-200 dark:shadow-none' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 bg-gray-50/50 dark:bg-white/2'}`}>
+                  <button onClick={() => handleModeSwitch('category')} className={`px-5 lg:px-4 py-2.5 lg:py-3.5 rounded-2xl text-[13px] sm:text-[14px] font-black flex items-center gap-3 transition-all ${sortMode === 'category' || sortMode === 'timeline' ? 'bg-[#12141c] dark:bg-amber-500 text-white shadow-xl shadow-gray-200 dark:shadow-none' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 bg-gray-50/50 dark:bg-white/2'}`}>
                     <LayoutGrid className="w-4 h-4" /> 每日洞察
                   </button>
-                  <button onClick={() => handleModeSwitch('journal')} className={`px-5 lg:px-4 py-2.5 lg:py-3.5 rounded-2xl text-[13px] sm:text-[14px] font-black flex items-center gap-3 transition-all ${sortMode === 'journal' ? 'bg-amber-500 text-white shadow-xl shadow-amber-200 dark:shadow-none' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 bg-gray-50/50 dark:bg-white/2'}`}>
-                    <Zap className="w-4 h-4" /> 信息捕捉瀑布流
+                  <button onClick={() => handleModeSwitch('journal')} className={`px-5 lg:px-4 py-2.5 lg:py-3.5 rounded-2xl text-[13px] sm:text-[14px] font-black flex items-center gap-3 transition-all ${sortMode === 'journal' ? 'bg-[#12141c] dark:bg-amber-500 text-white shadow-xl shadow-gray-200 dark:shadow-none' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 bg-gray-50/50 dark:bg-white/2'}`}>
+                    <Zap className="w-4 h-4" /> 信息捕捉
+                  </button>
+                  <button onClick={() => handleModeSwitch('feargreed')} className={`px-5 lg:px-4 py-2.5 lg:py-3.5 rounded-2xl text-[13px] sm:text-[14px] font-black flex items-center gap-3 transition-all ${sortMode === 'feargreed' ? 'bg-[#12141c] dark:bg-amber-500 text-white shadow-xl shadow-gray-200 dark:shadow-none' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 bg-gray-50/50 dark:bg-white/2'}`}>
+                    <Thermometer className="w-4 h-4" /> 恐慌贪婪
                   </button>
               </div>
             </div>
             
-            <div className="hidden lg:block">
-              <h3 className="text-[11px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest mb-4 flex items-center gap-2"><CalendarDays className="w-3.5 h-3.5" /> 历史回溯</h3>
-              <div className="space-y-1">
-                <button onClick={() => setSelectedMonth(null)} className={`w-full text-left px-4 py-3.5 rounded-2xl text-[14px] font-black flex items-center justify-between ${selectedMonth === null ? 'bg-gray-200 dark:bg-white/10 text-gray-900 dark:text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5'}`}>
-                  <span>全部记录</span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-md bg-white/50 dark:bg-black/20">{(sortMode === 'journal' ? journals : insights).length}</span>
-                </button>
-                {timelineMonthGroups.map(([month, count]) => (
-                  <button key={month} onClick={() => setSelectedMonth(month)} className={`w-full text-left px-4 py-3.5 rounded-2xl text-[14px] font-black flex items-center justify-between ${selectedMonth === month ? 'bg-gray-200 dark:bg-white/10 text-gray-900 dark:text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5'}`}>
-                    <span>{month}</span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-md bg-white/50 dark:bg-black/20">{count}</span>
+            {sortMode !== 'feargreed' && timelineMonthGroups.length > 0 && (
+              <div className="hidden lg:block">
+                <h3 className="text-[11px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest mb-4 flex items-center gap-2"><CalendarDays className="w-3.5 h-3.5" /> 历史回溯</h3>
+                <div className="space-y-1">
+                  <button onClick={() => setSelectedMonth(null)} className={`w-full text-left px-4 py-3.5 rounded-2xl text-[14px] font-black flex items-center justify-between ${selectedMonth === null ? 'bg-gray-200 dark:bg-white/10 text-gray-900 dark:text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5'}`}>
+                    <span>全部记录</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-md bg-white/50 dark:bg-black/20">
+                      {sortMode === 'journal' ? journals.length : insights.length}
+                    </span>
                   </button>
-                ))}
+                  {timelineMonthGroups.map(([month, count]) => (
+                    <button key={month} onClick={() => setSelectedMonth(month)} className={`w-full text-left px-4 py-3.5 rounded-2xl text-[14px] font-black flex items-center justify-between ${selectedMonth === month ? 'bg-gray-200 dark:bg-white/10 text-gray-900 dark:text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5'}`}>
+                      <span>{month}</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-md bg-white/50 dark:bg-black/20">{count}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </aside>
 
         <main className="flex-grow">
           <div className="mb-8 sm:mb-12">
             <h2 className="text-4xl sm:text-6xl font-black text-[#12141c] dark:text-white tracking-tighter leading-tight italic mb-6 sm:mb-10 transition-colors">
-              {sortMode === 'journal' ? <>信息捕捉<br className="hidden sm:block" />瀑布流。</> : <>追踪行情，<br className="hidden sm:block" />每日洞察。</>}
+              {sortMode === 'journal' ? <>信息捕捉<br className="hidden sm:block" />瀑布流。</> 
+               : sortMode === 'feargreed' ? <>恐慌贪婪<br className="hidden sm:block" />市场热力。</>
+               : <>追踪行情，<br className="hidden sm:block" />每日洞察。</>}
             </h2>
 
-            {sortMode !== 'journal' && (
+            {sortMode !== 'journal' && sortMode !== 'feargreed' && (
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-4">
                 <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar w-full sm:w-auto">
                   {CATEGORIES.map(cat => (
@@ -460,6 +528,8 @@ const App: React.FC = () => {
 
           {sortMode === 'journal' ? (
             <JournalSection entries={filteredJournals} isAdmin={isAdmin} onEdit={(j) => { setEditingJournal(j); setShowJournalForm(true); }} onDelete={handleDeleteJournal} />
+          ) : sortMode === 'feargreed' ? (
+            <FearGreedSection indices={indices} isAdmin={isAdmin} onEdit={(i) => { setEditingIndex(i); setShowIndexForm(true); }} onDelete={handleDeleteIndex} />
           ) : (
             <div className="space-y-16 sm:space-y-24">
               {groupedInsights.map(([groupLabel, groupItems]) => (
@@ -488,6 +558,7 @@ const App: React.FC = () => {
 
       {showForm && isAdmin && <InsightForm initialData={editingInsight} onSave={handleSaveInsight} onCancel={() => { setShowForm(false); setEditingInsight(undefined); }} />}
       {showJournalForm && isAdmin && <JournalForm initialData={editingJournal} onSave={handleSaveJournal} onCancel={() => { setShowJournalForm(false); setEditingJournal(undefined); }} />}
+      {showIndexForm && isAdmin && <IndexForm initialData={editingIndex} onSave={handleSaveIndex} onCancel={() => { setShowIndexForm(false); setEditingIndex(undefined); }} />}
       <LoginModal isOpen={showLogin} onClose={() => setShowLogin(false)} onVerify={onVerifyAdmin} />
     </div>
   );

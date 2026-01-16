@@ -46,6 +46,23 @@ export const initDatabase = async () => {
         updated_at BIGINT
       );
     `;
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS positions (
+        id TEXT PRIMARY KEY,
+        symbol TEXT NOT NULL,
+        category TEXT DEFAULT '美股',
+        signal_type TEXT,
+        side TEXT,
+        status TEXT DEFAULT '观察中',
+        signal_time BIGINT,
+        entry_price DOUBLE PRECISION,
+        invested_amount DOUBLE PRECISION DEFAULT 0,
+        yield_rate DOUBLE PRECISION DEFAULT 0,
+        yield_amount DOUBLE PRECISION DEFAULT 0,
+        updated_at BIGINT
+      );
+    `;
     
     await sql`
       CREATE TABLE IF NOT EXISTS notifications (

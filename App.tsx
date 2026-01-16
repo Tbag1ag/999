@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { MarketInsight, Category, CompletionStatus, SortMode, JournalEntry, EntryType, AppNotification, FearGreedIndex } from './types';
+import { MarketInsight, Category, CompletionStatus, SortMode, JournalEntry, EntryType, AppNotification, FearGreedIndex, PositionEntry, PositionStatus } from './types';
 import { CATEGORIES, INITIAL_INSIGHTS } from './constants';
 import MarketCard from './components/MarketCard';
 import InsightForm from './components/InsightForm';
@@ -8,23 +8,21 @@ import JournalSection from './components/JournalSection';
 import JournalForm from './components/JournalForm';
 import FearGreedSection from './components/FearGreedSection';
 import IndexForm from './components/IndexForm';
+import PositionSection from './components/PositionSection';
+import PositionForm from './components/PositionForm';
 import NotificationCenter from './components/NotificationCenter';
 import { sql, initDatabase } from './services/dbService';
 import { 
   Plus, 
   LayoutGrid, 
-  CalendarDays, 
   Search, 
   Lock,
   KeyRound,
   Zap,
-  Filter,
   Sun,
   Moon,
   Thermometer,
-  ArrowUpDown,
-  SortAsc,
-  SortDesc
+  TrendingUp
 } from 'lucide-react';
 
 const ADMIN_PASSWORD = "8888"; 
@@ -63,19 +61,25 @@ const App: React.FC = () => {
   const [insights, setInsights] = useState<MarketInsight[]>([]);
   const [journals, setJournals] = useState<JournalEntry[]>([]);
   const [indices, setIndices] = useState<FearGreedIndex[]>([]);
+  const [positions, setPositions] = useState<PositionEntry[]>([]);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<Category>('全部');
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
-  const [sortMode, setSortMode] = useState<SortMode>('feargreed');
-  const [fgSortOrder, setFgSortOrder] = useState<'default' | 'asc' | 'desc'>('default');
+  const [sortMode, setSortMode] = useState<SortMode>('category');
+  
   const [showForm, setShowForm] = useState(false);
   const [showJournalForm, setShowJournalForm] = useState(false);
   const [showIndexForm, setShowIndexForm] = useState(false);
+  const [showPositionForm, setShowPositionForm] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
+  
   const [editingInsight, setEditingInsight] = useState<MarketInsight | undefined>(undefined);
   const [editingJournal, setEditingJournal] = useState<JournalEntry | undefined>(undefined);
   const [editingIndex, setEditingIndex] = useState<FearGreedIndex | undefined>(undefined);
+  const [editingPosition, setEditingPosition] = useState<PositionEntry | undefined>(undefined);
+  
   const [searchQuery, setSearchQuery] = useState('');
   
   const [isAdmin, setIsAdmin] = useState(() => localStorage.getItem('is_admin') === 'true');
@@ -97,10 +101,11 @@ const App: React.FC = () => {
     if (sql) {
       try {
         await initDatabase();
-        const [insData, jrData, indexData, noteData] = await Promise.all([
+        const [insData, jrData, indexData, posData, noteData] = await Promise.all([
           sql`SELECT * FROM insights ORDER BY updated_at DESC`,
           sql`SELECT * FROM journals ORDER BY date DESC`,
           sql`SELECT * FROM indices ORDER BY updated_at DESC`,
+          sql`SELECT * FROM positions ORDER BY updated_at DESC`,
           sql`SELECT * FROM notifications ORDER BY timestamp DESC LIMIT 50`
         ]);
 
@@ -120,6 +125,17 @@ const App: React.FC = () => {
           const mappedIndices = indexData.map((a: any) => ({ ...a, updatedAt: Number(a.updated_at) }));
           setIndices(mappedIndices);
         }
+        if (posData) {
+          const mappedPos = posData.map((p: any) => ({
+            id: p.id, symbol: p.symbol, category: p.category || '美股', signalType: p.signal_type, side: p.side, status: (p.status || '观察中') as PositionStatus,
+            signalTime: Number(p.signal_time), entryPrice: Number(p.entry_price || 0), 
+            investedAmount: Number(p.invested_amount || 0),
+            yieldRate: Number(p.yield_rate || 0),
+            yieldAmount: Number(p.yield_amount || 0),
+            updatedAt: Number(p.updated_at)
+          }));
+          setPositions(mappedPos);
+        }
         if (noteData) {
           const mappedNotes = noteData.map((n: any) => ({
             id: n.id, title: n.title, message: n.message,
@@ -131,14 +147,11 @@ const App: React.FC = () => {
         console.error("Fetch error", e);
       }
     } else {
-      const sI = localStorage.getItem('local_insights');
-      setInsights(sI ? JSON.parse(sI) : INITIAL_INSIGHTS);
-      const sJ = localStorage.getItem('local_journals');
-      if (sJ) setJournals(JSON.parse(sJ));
-      const sIndex = localStorage.getItem('local_indices');
-      if (sIndex) setIndices(JSON.parse(sIndex));
-      const sN = localStorage.getItem('local_notifications');
-      if (sN) setNotifications(JSON.parse(sN));
+      setInsights(JSON.parse(localStorage.getItem('local_insights') || JSON.stringify(INITIAL_INSIGHTS)));
+      setJournals(JSON.parse(localStorage.getItem('local_journals') || '[]'));
+      setIndices(JSON.parse(localStorage.getItem('local_indices') || '[]'));
+      setPositions(JSON.parse(localStorage.getItem('local_positions') || '[]'));
+      setNotifications(JSON.parse(localStorage.getItem('local_notifications') || '[]'));
     }
     setLoading(false);
   };
@@ -159,6 +172,44 @@ const App: React.FC = () => {
       } catch (e) { console.error("Notification DB Error", e); }
     }
     setNotifications(prev => [newNote, ...prev].slice(0, 50));
+  };
+
+  const handleSavePosition = async (data: Partial<PositionEntry>) => {
+    const isNew = !editingPosition;
+    const id = editingPosition ? editingPosition.id : Math.random().toString(36).substr(2, 9);
+    const newPos: PositionEntry = {
+      id, symbol: data.symbol || '', category: data.category || '美股', signalType: data.signalType || 'Short Term', side: data.side || 'Buy',
+      status: data.status || '观察中', signalTime: data.signalTime || Date.now(),
+      entryPrice: data.entryPrice || 0, 
+      investedAmount: data.investedAmount || 0,
+      yieldRate: data.yieldRate || 0, 
+      yieldAmount: data.yieldAmount || 0,
+      updatedAt: data.updatedAt || Date.now()
+    };
+    if (sql) {
+      try {
+        // Fix: Use camelCase property names from PositionEntry type in VALUES clause
+        await sql`
+          INSERT INTO positions (id, symbol, category, signal_type, side, status, signal_time, entry_price, invested_amount, yield_rate, yield_amount, updated_at)
+          VALUES (${newPos.id}, ${newPos.symbol}, ${newPos.category}, ${newPos.signalType}, ${newPos.side}, ${newPos.status}, ${newPos.signalTime}, ${newPos.entryPrice}, ${newPos.investedAmount}, ${newPos.yieldRate}, ${newPos.yieldAmount}, ${newPos.updatedAt})
+          ON CONFLICT (id) DO UPDATE SET symbol = EXCLUDED.symbol, category = EXCLUDED.category, signal_type = EXCLUDED.signal_type, side = EXCLUDED.side, status = EXCLUDED.status, signal_time = EXCLUDED.signal_time, entry_price = EXCLUDED.entry_price, invested_amount = EXCLUDED.invested_amount, yield_rate = EXCLUDED.yield_rate, yield_amount = EXCLUDED.yield_amount, updated_at = EXCLUDED.updated_at
+        `;
+      } catch (e) { alert("同步失败"); return; }
+    }
+    if (isNew) addNotification(`仓位追踪: ${newPos.symbol}`, `${newPos.status} 收益额: $${newPos.yieldAmount}`, 'position');
+    setPositions(prev => {
+      const updated = editingPosition ? prev.map(p => p.id === id ? newPos : p) : [newPos, ...prev];
+      localStorage.setItem('local_positions', JSON.stringify(updated));
+      return updated;
+    });
+    setShowPositionForm(false);
+    setEditingPosition(undefined);
+  };
+
+  const handleDeletePosition = async (id: string) => {
+    if (!window.confirm("确定删除此交易项？")) return;
+    if (sql) { try { await sql`DELETE FROM positions WHERE id = ${id}`; } catch (e) { return; } }
+    setPositions(prev => prev.filter(p => p.id !== id));
   };
 
   const onVerifyAdmin = (pwd: string) => {
@@ -230,7 +281,7 @@ const App: React.FC = () => {
     const isNew = !editingIndex;
     const id = editingIndex ? editingIndex.id : Math.random().toString(36).substr(2, 9);
     const newIndex: FearGreedIndex = {
-      id, symbol: data.symbol || '', score: data.score || 50, updatedAt: Date.now()
+      id, symbol: data.symbol || '', score: data.score || 50, updatedAt: data.updatedAt || Date.now()
     };
     if (sql) {
       try {
@@ -253,44 +304,19 @@ const App: React.FC = () => {
 
   const handleDeleteIndex = async (id: string) => {
     if (!window.confirm("确定要删除这条指数记录吗？")) return;
-    
-    let deleteSuccessful = true;
-    if (sql) { 
-      try { 
-        await sql`DELETE FROM indices WHERE id = ${id}`; 
-      } catch (e) { 
-        console.error("SQL Delete Index Error:", e);
-        alert("云端删除失败，请检查网络后重试。");
-        deleteSuccessful = false;
-      } 
-    }
-    
-    if (deleteSuccessful) {
-      setIndices(prev => {
-        const updated = prev.filter(a => a.id !== id);
-        localStorage.setItem('local_indices', JSON.stringify(updated));
-        return updated;
-      });
-    }
+    if (sql) { try { await sql`DELETE FROM indices WHERE id = ${id}`; } catch (e) { return; } }
+    setIndices(prev => prev.filter(a => a.id !== id));
   };
 
   const handleDeleteInsight = async (id: string) => {
     if (!window.confirm("确定要删除这条观点吗？")) return;
-    if (sql) { try { await sql`DELETE FROM insights WHERE id = ${id}`; } catch (e) { alert("删除失败"); return; } }
-    setInsights(prev => {
-      const updated = prev.filter(i => i.id !== id);
-      localStorage.setItem('local_insights', JSON.stringify(updated));
-      return updated;
-    });
+    if (sql) { try { await sql`DELETE FROM insights WHERE id = ${id}`; } catch (e) { return; } }
+    setInsights(prev => prev.filter(i => i.id !== id));
   };
 
   const handleDeleteJournal = async (id: string) => {
-    if (sql) { try { await sql`DELETE FROM journals WHERE id = ${id}`; } catch (e) { alert("删除失败"); return; } }
-    setJournals(prev => {
-      const updated = prev.filter(j => j.id !== id);
-      localStorage.setItem('local_journals', JSON.stringify(updated));
-      return updated;
-    });
+    if (sql) { try { await sql`DELETE FROM journals WHERE id = ${id}`; } catch (e) { return; } }
+    setJournals(prev => prev.filter(j => j.id !== id));
   };
 
   const handleToggleCompletionStatus = async (id: string) => {
@@ -312,16 +338,16 @@ const App: React.FC = () => {
     if (!window.confirm("确定清除所有消息通知吗？")) return;
     if (sql) { try { await sql`DELETE FROM notifications`; } catch (e) {} }
     setNotifications([]);
-    localStorage.removeItem('local_notifications');
   };
 
   const handleDeleteNotification = async (id: string) => {
     if (sql) { try { await sql`DELETE FROM notifications WHERE id = ${id}`; } catch (e) {} }
-    setNotifications(prev => {
-      const updated = prev.filter(n => n.id !== id);
-      localStorage.setItem('local_notifications', JSON.stringify(updated));
-      return updated;
-    });
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  };
+
+  const handleModeSwitch = (mode: SortMode) => {
+    setSortMode(mode);
+    setSelectedMonth(null);
   };
 
   const filteredInsights = useMemo(() => {
@@ -347,59 +373,15 @@ const App: React.FC = () => {
     return result;
   }, [journals, selectedMonth, searchQuery]);
 
-  // 对恐慌贪婪指数进行实时排序
-  const sortedIndices = useMemo(() => {
-    let result = [...indices];
-    if (fgSortOrder === 'asc') {
-      return result.sort((a, b) => a.score - b.score);
-    } else if (fgSortOrder === 'desc') {
-      return result.sort((a, b) => b.score - a.score);
-    }
-    return result; // 默认按更新时间
-  }, [indices, fgSortOrder]);
-
-  const { activeItems, archivedItems } = useMemo(() => ({
-    activeItems: filteredInsights.filter(i => i.completionStatus === '进行中'),
-    archivedItems: filteredInsights.filter(i => i.completionStatus !== '进行中')
-  }), [filteredInsights]);
-
   const groupedInsights = useMemo(() => {
     const groups: { [label: string]: MarketInsight[] } = {};
-    activeItems.forEach(insight => {
+    filteredInsights.filter(i => i.completionStatus === '进行中').forEach(insight => {
       let label = insight.category;
-      if (sortMode === 'timeline') {
-        const date = new Date(insight.updatedAt);
-        label = date.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
-      }
       if (!groups[label]) groups[label] = [];
       groups[label].push(insight);
     });
-
-    return Object.entries(groups).sort((a, b) => {
-      if (sortMode === 'category') return CATEGORIES.indexOf(a[0] as any) - CATEGORIES.indexOf(b[0] as any);
-      return b[1][0].updatedAt - a[1][0].updatedAt;
-    });
-  }, [activeItems, sortMode]);
-
-  const timelineMonthGroups = useMemo(() => {
-    const groups: { [key: string]: number } = {};
-    // 恐慌贪婪模式下不计算月度历史
-    if (sortMode === 'feargreed') return [];
-    
-    const data = sortMode === 'journal' ? journals : insights;
-    data.forEach(i => {
-      const timestamp = (i as any).date || (i as any).updatedAt;
-      const date = new Date(timestamp);
-      const key = `${date.getFullYear()}年${date.getMonth() + 1}月`;
-      groups[key] = (groups[key] || 0) + 1;
-    });
-    return Object.entries(groups).sort((a, b) => b[0].localeCompare(a[0]));
-  }, [insights, journals, sortMode]);
-
-  const handleModeSwitch = (mode: SortMode) => {
-    setSortMode(mode);
-    setSelectedMonth(null);
-  };
+    return Object.entries(groups).sort((a, b) => CATEGORIES.indexOf(a[0] as any) - CATEGORIES.indexOf(b[0] as any));
+  }, [filteredInsights]);
 
   return (
     <div className="min-h-screen flex flex-col selection:bg-amber-100 dark:selection:bg-amber-900/30 pb-20 transition-colors duration-300">
@@ -420,30 +402,17 @@ const App: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-            <button 
-              onClick={() => setIsDarkMode(!isDarkMode)}
-              className="p-2.5 bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-all group active:scale-95 flex items-center justify-center"
-              aria-label="切换主题"
-            >
-              {isDarkMode ? (
-                <Sun className="w-5 h-5 text-amber-500 transition-transform group-hover:rotate-45" />
-              ) : (
-                <Moon className="w-5 h-5 text-gray-400 group-hover:text-[#12141c] transition-transform group-hover:-rotate-12" />
-              )}
+            <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2.5 bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-all group active:scale-95 flex items-center justify-center">
+              {isDarkMode ? <Sun className="w-5 h-5 text-amber-500" /> : <Moon className="w-5 h-5 text-gray-400" />}
             </button>
-
-            <NotificationCenter 
-              notifications={notifications} 
-              onMarkAsRead={handleMarkAsRead} 
-              onClearAll={handleClearAllNotifications} 
-              onDelete={handleDeleteNotification} 
-            />
+            <NotificationCenter notifications={notifications} onMarkAsRead={handleMarkAsRead} onClearAll={handleClearAllNotifications} onDelete={handleDeleteNotification} />
             {isAdmin && (
               <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l border-gray-100 dark:border-white/5">
                 <button 
                   onClick={() => {
                     if (sortMode === 'journal') setShowJournalForm(true);
                     else if (sortMode === 'feargreed') setShowIndexForm(true);
+                    else if (sortMode === 'positions') setShowPositionForm(true);
                     else setShowForm(true);
                   }} 
                   className="bg-[#12141c] dark:bg-amber-500 text-white flex items-center gap-2 px-3 sm:px-5 py-2.5 rounded-full hover:scale-105 transition-all shadow-xl shadow-gray-200 dark:shadow-none"
@@ -463,37 +432,20 @@ const App: React.FC = () => {
           <div className="lg:sticky lg:top-[104px] space-y-6 lg:space-y-10">
             <div className="overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
               <div className="flex lg:flex-col gap-2 min-w-max lg:min-w-0">
-                  <button onClick={() => handleModeSwitch('category')} className={`px-5 lg:px-4 py-2.5 lg:py-3.5 rounded-2xl text-[13px] sm:text-[14px] font-black flex items-center gap-3 transition-all ${sortMode === 'category' || sortMode === 'timeline' ? 'bg-[#12141c] dark:bg-amber-500 text-white shadow-xl shadow-gray-200 dark:shadow-none' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 bg-gray-50/50 dark:bg-white/2'}`}>
+                  <button onClick={() => handleModeSwitch('category')} className={`px-5 lg:px-4 py-2.5 lg:py-3.5 rounded-2xl text-[13px] sm:text-[14px] font-black flex items-center gap-3 transition-all ${sortMode === 'category' ? 'bg-[#12141c] dark:bg-amber-500 text-white shadow-xl shadow-gray-200 dark:shadow-none' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 bg-gray-50/50 dark:bg-white/2'}`}>
                     <LayoutGrid className="w-4 h-4" /> 每日洞察
                   </button>
                   <button onClick={() => handleModeSwitch('journal')} className={`px-5 lg:px-4 py-2.5 lg:py-3.5 rounded-2xl text-[13px] sm:text-[14px] font-black flex items-center gap-3 transition-all ${sortMode === 'journal' ? 'bg-[#12141c] dark:bg-amber-500 text-white shadow-xl shadow-gray-200 dark:shadow-none' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 bg-gray-50/50 dark:bg-white/2'}`}>
                     <Zap className="w-4 h-4" /> 信息捕捉
                   </button>
-                  <button onClick={() => handleModeSwitch('feargreed')} className={`px-5 lg:px-4 py-2.5 lg:py-3.5 rounded-2xl text-[13px] sm:text-[14px] font-black flex items-center gap-3 transition-all ${sortMode === 'feargreed' ? 'bg-[#12141c] dark:bg-amber-500 text-white shadow-xl shadow-gray-200 dark:shadow-none' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 bg-gray-50/50 dark:bg-white/2'}`}>
+                  <button onClick={() => handleModeSwitch('positions')} className={`px-5 lg:px-4 py-2.5 lg:py-3.5 rounded-2xl text-[13px] sm:text-[14px] font-black flex items-center gap-3 transition-all ${sortMode === 'positions' ? 'bg-[#12141c] dark:bg-amber-500 text-white shadow-xl shadow-gray-200 dark:shadow-none' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 bg-gray-50/50 dark:bg-white/2'}`}>
+                    <TrendingUp className="w-4 h-4" /> 仓位追踪
+                  </button>
+                  <button onClick={() => handleModeSwitch('feargreed')} className={`px-5 lg:px-4 py-2.5 lg:py-3.5 rounded-2xl text-[13px] font-black flex items-center gap-3 transition-all ${sortMode === 'feargreed' ? 'bg-[#12141c] dark:bg-amber-500 text-white shadow-xl shadow-gray-200 dark:shadow-none' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 bg-gray-50/50 dark:bg-white/2'}`}>
                     <Thermometer className="w-4 h-4" /> 恐慌贪婪
                   </button>
               </div>
             </div>
-            
-            {sortMode !== 'feargreed' && timelineMonthGroups.length > 0 && (
-              <div className="hidden lg:block">
-                <h3 className="text-[11px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest mb-4 flex items-center gap-2"><CalendarDays className="w-3.5 h-3.5" /> 历史回溯</h3>
-                <div className="space-y-1">
-                  <button onClick={() => setSelectedMonth(null)} className={`w-full text-left px-4 py-3.5 rounded-2xl text-[14px] font-black flex items-center justify-between ${selectedMonth === null ? 'bg-gray-200 dark:bg-white/10 text-gray-900 dark:text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5'}`}>
-                    <span>全部记录</span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-md bg-white/50 dark:bg-black/20">
-                      {sortMode === 'journal' ? journals.length : insights.length}
-                    </span>
-                  </button>
-                  {timelineMonthGroups.map(([month, count]) => (
-                    <button key={month} onClick={() => setSelectedMonth(month)} className={`w-full text-left px-4 py-3.5 rounded-2xl text-[14px] font-black flex items-center justify-between ${selectedMonth === month ? 'bg-gray-200 dark:bg-white/10 text-gray-900 dark:text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5'}`}>
-                      <span>{month}</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-md bg-white/50 dark:bg-black/20">{count}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </aside>
 
@@ -502,77 +454,17 @@ const App: React.FC = () => {
             <h2 className="text-4xl sm:text-6xl font-black text-[#12141c] dark:text-white tracking-tighter leading-tight italic mb-6 sm:mb-10 transition-colors">
               {sortMode === 'journal' ? <>信息捕捉<br className="hidden sm:block" />瀑布流。</> 
                : sortMode === 'feargreed' ? <>恐慌贪婪<br className="hidden sm:block" />市场热力。</>
+               : sortMode === 'positions' ? <>仓位追踪。</>
                : <>追踪行情，<br className="hidden sm:block" />每日洞察。</>}
             </h2>
-
-            {sortMode === 'feargreed' && (
-              <div className="flex items-center gap-4 mb-10 overflow-x-auto no-scrollbar pb-2">
-                <span className="text-[11px] font-black text-gray-400 uppercase tracking-widest shrink-0 flex items-center gap-2">
-                  <ArrowUpDown className="w-3.5 h-3.5" /> 排序方式
-                </span>
-                <div className="flex gap-2">
-                  <button 
-                    onClick={() => setFgSortOrder('default')}
-                    className={`px-5 py-2 rounded-full text-[12px] font-black transition-all whitespace-nowrap ${fgSortOrder === 'default' ? 'bg-[#12141c] dark:bg-amber-500 text-white shadow-lg' : 'bg-gray-100 dark:bg-white/5 text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
-                  >
-                    默认 (时间)
-                  </button>
-                  <button 
-                    onClick={() => setFgSortOrder('asc')}
-                    className={`px-5 py-2 rounded-full text-[12px] font-black transition-all whitespace-nowrap flex items-center gap-2 ${fgSortOrder === 'asc' ? 'bg-[#12141c] dark:bg-amber-500 text-white shadow-lg' : 'bg-gray-100 dark:bg-white/5 text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
-                  >
-                    <SortAsc className="w-3.5 h-3.5" /> 分值由低到高
-                  </button>
-                  <button 
-                    onClick={() => setFgSortOrder('desc')}
-                    className={`px-5 py-2 rounded-full text-[12px] font-black transition-all whitespace-nowrap flex items-center gap-2 ${fgSortOrder === 'desc' ? 'bg-[#12141c] dark:bg-amber-500 text-white shadow-lg' : 'bg-gray-100 dark:bg-white/5 text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
-                  >
-                    <SortDesc className="w-3.5 h-3.5" /> 分值由高到低
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {sortMode !== 'journal' && sortMode !== 'feargreed' && (
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-4">
-                <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar w-full sm:w-auto">
-                  {CATEGORIES.map(cat => (
-                    <button
-                      key={cat}
-                      onClick={() => setActiveCategory(cat)}
-                      className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-[12px] sm:text-[13px] font-black whitespace-nowrap transition-all ${
-                        activeCategory === cat 
-                          ? 'bg-[#12141c] dark:bg-amber-500 text-white shadow-xl shadow-gray-200 dark:shadow-none' 
-                          : 'bg-gray-100 dark:bg-white/5 text-gray-400 dark:text-gray-500 hover:bg-gray-200 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white'
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="flex items-center p-1.5 bg-gray-100 dark:bg-white/5 rounded-[1.25rem] shrink-0 self-end sm:self-auto">
-                   <button 
-                     onClick={() => setSortMode('category')}
-                     className={`flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-2.5 rounded-[1rem] text-[12px] sm:text-[14px] font-black transition-all ${sortMode === 'category' ? 'bg-white dark:bg-[#1a1d26] text-gray-900 dark:text-white shadow-[0_4px_12px_rgba(0,0,0,0.08)]' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
-                   >
-                     <Filter className="w-4 h-4" /> 类别
-                   </button>
-                   <button 
-                     onClick={() => setSortMode('timeline')}
-                     className={`flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-2.5 rounded-[1rem] text-[12px] sm:text-[14px] font-black transition-all ${sortMode === 'timeline' ? 'bg-white dark:bg-[#1a1d26] text-gray-900 dark:text-white shadow-[0_4px_12px_rgba(0,0,0,0.08)]' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
-                   >
-                     <CalendarDays className="w-4 h-4" /> 时间
-                   </button>
-                </div>
-              </div>
-            )}
           </div>
 
           {sortMode === 'journal' ? (
             <JournalSection entries={filteredJournals} isAdmin={isAdmin} onEdit={(j) => { setEditingJournal(j); setShowJournalForm(true); }} onDelete={handleDeleteJournal} />
           ) : sortMode === 'feargreed' ? (
-            <FearGreedSection indices={sortedIndices} isAdmin={isAdmin} onEdit={(i) => { setEditingIndex(i); setShowIndexForm(true); }} onDelete={handleDeleteIndex} />
+            <FearGreedSection indices={indices} isAdmin={isAdmin} onEdit={(i) => { setEditingIndex(i); setShowIndexForm(true); }} onDelete={handleDeleteIndex} />
+          ) : sortMode === 'positions' ? (
+            <PositionSection positions={positions} isAdmin={isAdmin} onEdit={(p) => { setEditingPosition(p); setShowPositionForm(true); }} onDelete={handleDeletePosition} />
           ) : (
             <div className="space-y-16 sm:space-y-24">
               {groupedInsights.map(([groupLabel, groupItems]) => (
@@ -586,14 +478,6 @@ const App: React.FC = () => {
                   </div>
                 </section>
               ))}
-              {archivedItems.length > 0 && (
-                <div className="mt-24 sm:mt-40 pt-12 sm:pt-20 border-t border-gray-100 dark:border-white/5 opacity-50 hover:opacity-100 transition-opacity">
-                   <h3 className="text-xl sm:text-2xl font-black mb-8 sm:mb-12 italic text-[#12141c] dark:text-white">历史已归档</h3>
-                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-10">
-                    {archivedItems.map(i => <MarketCard key={i.id} insight={i} onEdit={(ins) => { setEditingInsight(ins); setShowForm(true); }} onDelete={handleDeleteInsight} onToggleCompletion={handleToggleCompletionStatus} isEditable={isAdmin} />)}
-                  </div>
-                </div>
-              )}
             </div>
           )}
         </main>
@@ -602,6 +486,7 @@ const App: React.FC = () => {
       {showForm && isAdmin && <InsightForm initialData={editingInsight} onSave={handleSaveInsight} onCancel={() => { setShowForm(false); setEditingInsight(undefined); }} />}
       {showJournalForm && isAdmin && <JournalForm initialData={editingJournal} onSave={handleSaveJournal} onCancel={() => { setShowJournalForm(false); setEditingJournal(undefined); }} />}
       {showIndexForm && isAdmin && <IndexForm initialData={editingIndex} onSave={handleSaveIndex} onCancel={() => { setShowIndexForm(false); setEditingIndex(undefined); }} />}
+      {showPositionForm && isAdmin && <PositionForm initialData={editingPosition} onSave={handleSavePosition} onCancel={() => { setShowPositionForm(false); setEditingPosition(undefined); }} />}
       <LoginModal isOpen={showLogin} onClose={() => setShowLogin(false)} onVerify={onVerifyAdmin} />
     </div>
   );

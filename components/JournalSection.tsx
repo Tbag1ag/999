@@ -11,11 +11,11 @@ interface JournalSectionProps {
 }
 
 const getTypeStyles = (type?: EntryType) => {
-  const baseBorder = 'border-2 border-black/15 dark:border-white/10';
+  const baseBorder = 'border-2 border-gray-100/80 dark:border-white/10';
   switch (type) {
     case '新闻':
       return {
-        cardBg: 'bg-blue-50/50 dark:bg-blue-900/10',
+        cardBg: 'bg-blue-50/30 dark:bg-blue-900/10',
         cardBorder: baseBorder,
         iconBg: 'bg-blue-500',
         iconText: 'text-white',
@@ -26,7 +26,7 @@ const getTypeStyles = (type?: EntryType) => {
       };
     case '逻辑':
       return {
-        cardBg: 'bg-amber-50/50 dark:bg-amber-900/10',
+        cardBg: 'bg-amber-50/30 dark:bg-amber-900/10',
         cardBorder: baseBorder,
         iconBg: 'bg-amber-500',
         iconText: 'text-white',
@@ -38,7 +38,7 @@ const getTypeStyles = (type?: EntryType) => {
     case '随笔':
     default:
       return {
-        cardBg: 'bg-purple-50/50 dark:bg-purple-900/10',
+        cardBg: 'bg-purple-50/30 dark:bg-purple-900/10',
         cardBorder: baseBorder,
         iconBg: 'bg-purple-500',
         iconText: 'text-white',
@@ -133,19 +133,19 @@ const JournalSection: React.FC<JournalSectionProps> = ({ entries, isAdmin, onEdi
               >
                 <div className={`absolute -left-[51.5px] top-[26px] w-2 h-2 rounded-full bg-white dark:bg-[#0f1117] border-2 border-gray-200 dark:border-white/10 hidden md:block z-10 transition-colors group-hover:border-[#12141c] dark:group-hover:border-amber-500`} />
 
-                <div className={`bg-white dark:bg-[#1a1d26] rounded-[2rem] sm:rounded-[2.5rem] border-2 ${styles.cardBorder} p-6 sm:p-8 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.06)] transition-all duration-300 ${styles.cardBg} ${styles.hoverShadow} group-hover:shadow-[0_40px_100px_-20px_rgba(0,0,0,0.1)] dark:group-hover:shadow-none group-hover:-translate-y-1`}>
+                <div className={`bg-white dark:bg-[#1a1d26] rounded-[2.5rem] ${styles.cardBorder} p-8 shadow-sm transition-all duration-300 ${styles.cardBg} group-hover:shadow-xl group-hover:border-gray-200 dark:group-hover:border-white/20 group-hover:-translate-y-1`}>
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
-                      <div className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-2xl shadow-lg transition-all ${styles.iconBg} ${styles.iconText} group-hover:scale-110`}>
+                      <div className={`w-10 h-10 flex items-center justify-center rounded-2xl shadow-lg transition-all ${styles.iconBg} ${styles.iconText} group-hover:scale-110`}>
                         <TypeIcon type={entry.type} />
                       </div>
                       
                       <div className="flex flex-col">
                         <div className="flex items-center gap-2">
-                          <span className={`text-[9px] sm:text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${styles.tagBg} ${styles.tagText}`}>
+                          <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${styles.tagBg} ${styles.tagText}`}>
                             {entry.type}
                           </span>
-                          <span className="text-[11px] sm:text-[12px] font-medium text-gray-400 dark:text-gray-500">
+                          <span className="text-[12px] font-medium text-gray-400 dark:text-gray-500">
                             {formatTime(entry.date)}
                           </span>
                         </div>
@@ -196,18 +196,15 @@ const JournalSection: React.FC<JournalSectionProps> = ({ entries, isAdmin, onEdi
                   </div>
 
                   {entry.title && (
-                    <h4 className="text-xl sm:text-2xl font-black text-[#12141c] dark:text-white mb-4 tracking-tight leading-tight">
+                    <h4 className="text-2xl font-black text-[#12141c] dark:text-white mb-4 tracking-tight leading-tight">
                       {entry.title}
                     </h4>
                   )}
 
                   <div className="relative">
-                    <p className="text-[14px] sm:text-[16px] leading-relaxed text-gray-700 dark:text-gray-300 font-medium whitespace-pre-wrap">
+                    <p className="text-[16px] leading-relaxed text-gray-700 dark:text-gray-300 font-medium whitespace-pre-wrap">
                       {entry.content}
                     </p>
-                    {entry.content.length > 300 && (
-                       <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white dark:from-[#1a1d26] to-transparent pointer-events-none group-hover:hidden" />
-                    )}
                   </div>
 
                   {entry.source && (
@@ -216,7 +213,7 @@ const JournalSection: React.FC<JournalSectionProps> = ({ entries, isAdmin, onEdi
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
-                      className={`mt-6 flex items-center gap-2 w-fit px-4 py-2 rounded-xl cursor-pointer transition-all border-2 ${styles.cardBorder} bg-white/50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 hover:shadow-md hover:scale-[1.02] active:scale-95 shadow-sm group/link`}
+                      className={`mt-6 flex items-center gap-2 w-fit px-4 py-2 rounded-xl cursor-pointer transition-all border-2 border-gray-100/50 dark:border-white/5 bg-white/50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 hover:shadow-md hover:scale-[1.02] active:scale-95 shadow-sm group/link`}
                     >
                       <Link className={`w-3.5 h-3.5 ${styles.accentColor} group-hover/link:rotate-12 transition-transform`} />
                       <span className="text-[11px] font-bold truncate max-w-[180px] sm:max-w-[300px] text-gray-500 dark:text-gray-400">{entry.source}</span>

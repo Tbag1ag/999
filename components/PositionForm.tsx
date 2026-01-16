@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { PositionEntry, PositionSignalType, PositionSide, PositionStatus, Category } from '../types';
-import { X, Save, TrendingUp, Calendar } from 'lucide-react';
+import { X, Save, TrendingUp, Calendar, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { CATEGORIES } from '../constants';
 
 interface PositionFormProps {
@@ -54,7 +54,7 @@ const PositionForm: React.FC<PositionFormProps> = ({ initialData, onSave, onCanc
           <button onClick={onCancel} className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors"><X className="w-6 h-6 text-gray-400" /></button>
         </div>
 
-        <form onSubmit={(e) => { e.preventDefault(); onSave(formData); }} className="p-10 space-y-5">
+        <form onSubmit={(e) => { e.preventDefault(); onSave(formData); }} className="p-10 space-y-6">
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-2">
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">记录日期</label>
@@ -98,6 +98,34 @@ const PositionForm: React.FC<PositionFormProps> = ({ initialData, onSave, onCanc
               <select className="w-full bg-gray-50 dark:bg-white/5 border-2 border-transparent focus:border-amber-400 p-3.5 rounded-2xl outline-none text-[13px] font-black dark:text-white appearance-none transition-all cursor-pointer" value={formData.status} onChange={e => setFormData({...formData, status: e.target.value as PositionStatus})}>
                 {statusOptions.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">交易方向 (Side)</label>
+            <div className="flex gap-3 p-1.5 bg-gray-50 dark:bg-white/5 rounded-2xl">
+              <button
+                type="button"
+                onClick={() => setFormData({...formData, side: 'Buy'})}
+                className={`flex-1 py-3 rounded-xl text-[12px] font-black flex items-center justify-center gap-2 transition-all ${
+                  formData.side === 'Buy' 
+                  ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200 dark:shadow-none' 
+                  : 'text-gray-400 hover:text-emerald-500'
+                }`}
+              >
+                <ArrowUpRight className="w-4 h-4" /> 买入 / 多
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({...formData, side: 'Sell'})}
+                className={`flex-1 py-3 rounded-xl text-[12px] font-black flex items-center justify-center gap-2 transition-all ${
+                  formData.side === 'Sell' 
+                  ? 'bg-red-500 text-white shadow-lg shadow-red-200 dark:shadow-none' 
+                  : 'text-gray-400 hover:text-red-500'
+                }`}
+              >
+                <ArrowDownRight className="w-4 h-4" /> 卖出 / 空
+              </button>
             </div>
           </div>
 

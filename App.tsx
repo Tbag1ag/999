@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { MarketInsight, Category, CompletionStatus, SortMode, JournalEntry, EntryType, AppNotification, FearGreedIndex, PositionEntry, PositionStatus } from './types';
+import { MarketInsight, Category, CompletionStatus, SortMode, JournalEntry, EntryType, AppNotification, FearGreedIndex, PositionEntry, PositionStatus, PositionSide } from './types';
 import { CATEGORIES, INITIAL_INSIGHTS } from './constants';
 import MarketCard from './components/MarketCard';
 import InsightForm from './components/InsightForm';
@@ -22,7 +21,9 @@ import {
   Sun,
   Moon,
   Thermometer,
-  TrendingUp
+  TrendingUp,
+  History,
+  Calendar
 } from 'lucide-react';
 
 const ADMIN_PASSWORD = "8888"; 
@@ -127,7 +128,9 @@ const App: React.FC = () => {
         }
         if (posData) {
           const mappedPos = posData.map((p: any) => ({
-            id: p.id, symbol: p.symbol, category: p.category || '美股', signalType: p.signal_type, side: p.side, status: (p.status || '观察中') as PositionStatus,
+            id: p.id, symbol: p.symbol, category: p.category || '美股', signalType: p.signal_type, 
+            side: (p.side || 'Buy') as PositionSide,
+            status: (p.status || '观察中') as PositionStatus,
             signalTime: Number(p.signal_time), entryPrice: Number(p.entry_price || 0), 
             investedAmount: Number(p.invested_amount || 0),
             yieldRate: Number(p.yield_rate || 0),
@@ -188,7 +191,6 @@ const App: React.FC = () => {
     };
     if (sql) {
       try {
-        // Fix: Use camelCase property names from PositionEntry type in VALUES clause
         await sql`
           INSERT INTO positions (id, symbol, category, signal_type, side, status, signal_time, entry_price, invested_amount, yield_rate, yield_amount, updated_at)
           VALUES (${newPos.id}, ${newPos.symbol}, ${newPos.category}, ${newPos.signalType}, ${newPos.side}, ${newPos.status}, ${newPos.signalTime}, ${newPos.entryPrice}, ${newPos.investedAmount}, ${newPos.yieldRate}, ${newPos.yieldAmount}, ${newPos.updatedAt})
@@ -208,8 +210,18 @@ const App: React.FC = () => {
 
   const handleDeletePosition = async (id: string) => {
     if (!window.confirm("确定删除此交易项？")) return;
-    if (sql) { try { await sql`DELETE FROM positions WHERE id = ${id}`; } catch (e) { return; } }
-    setPositions(prev => prev.filter(p => p.id !== id));
+    if (sql) {
+      try {
+        await sql`DELETE FROM positions WHERE id = ${id}`;
+      } catch (e) {
+        console.error("Database deletion failed", e);
+      }
+    }
+    setPositions(prev => {
+      const updated = prev.filter(p => p.id !== id);
+      localStorage.setItem('local_positions', JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const onVerifyAdmin = (pwd: string) => {
@@ -233,6 +245,7 @@ const App: React.FC = () => {
     };
     if (sql) {
       try {
+        // Fix: Use correct camelCase property names from newInsight when inserting into database
         await sql`
           INSERT INTO insights (id, symbol, category, status, focus_points, strategy, entry_level, updated_at, completion_status)
           VALUES (${newInsight.id}, ${newInsight.symbol}, ${newInsight.category}, ${newInsight.status}, ${newInsight.focusPoints}, ${newInsight.strategy}, ${newInsight.entryLevel}, ${newInsight.updatedAt}, ${newInsight.completionStatus})
@@ -380,7 +393,8 @@ const App: React.FC = () => {
       if (!groups[label]) groups[label] = [];
       groups[label].push(insight);
     });
-    return Object.entries(groups).sort((a, b) => CATEGORIES.indexOf(a[0] as any) - CATEGORIES.indexOf(b[0] as any));
+    // Cast Object.entries to provide explicit mapping types
+    return (Object.entries(groups) as [string, MarketInsight[]][]).sort((a, b) => CATEGORIES.indexOf(a[0] as any) - CATEGORIES.indexOf(b[0] as any));
   }, [filteredInsights]);
 
   return (
@@ -454,7 +468,7 @@ const App: React.FC = () => {
             <h2 className="text-4xl sm:text-6xl font-black text-[#12141c] dark:text-white tracking-tighter leading-tight italic mb-6 sm:mb-10 transition-colors">
               {sortMode === 'journal' ? <>信息捕捉<br className="hidden sm:block" />瀑布流。</> 
                : sortMode === 'feargreed' ? <>恐慌贪婪<br className="hidden sm:block" />市场热力。</>
-               : sortMode === 'positions' ? <>仓位追踪。</>
+               : sortMode === 'positions' ? <>小波小太<br className="hidden sm:block" />仓位追踪。</>
                : <>追踪行情，<br className="hidden sm:block" />每日洞察。</>}
             </h2>
           </div>

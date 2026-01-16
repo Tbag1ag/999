@@ -38,7 +38,6 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
   const [search, setSearch] = useState('');
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'asc' | 'desc' } | null>(null);
 
-  // 处理排序逻辑
   const requestSort = (key: SortKey) => {
     let direction: 'asc' | 'desc' = 'asc';
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -103,12 +102,8 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
       filtered.sort((a, b) => {
         const aValue = a[sortConfig.key];
         const bValue = b[sortConfig.key];
-        if (aValue < bValue) {
-          return sortConfig.direction === 'asc' ? -1 : 1;
-        }
-        if (aValue > bValue) {
-          return sortConfig.direction === 'asc' ? 1 : -1;
-        }
+        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
         return 0;
       });
     }
@@ -116,7 +111,6 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
     return filtered;
   }, [positions, activeTab, search, sortConfig]);
 
-  // 导出 CSV 逻辑
   const exportToCSV = () => {
     const headers = ['标的', '类别', '状态', '方向', '周期', '入场价', '本金', '收益率', '收益额', '记录时间'];
     const rows = processedPositions.map(p => [
@@ -132,12 +126,8 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
       new Date(p.updatedAt).toLocaleDateString('zh-CN')
     ]);
 
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(r => r.join(','))
-    ].join('\n');
-
-    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const csvContent = ['\ufeff' + headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
@@ -151,7 +141,7 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
     const isActive = sortConfig?.key === columnKey;
     const direction = sortConfig?.direction;
     return (
-      <div className="flex flex-col ml-1.5 opacity-30 group-hover/th:opacity-100 transition-opacity">
+      <div className="flex flex-col ml-1 opacity-20 group-hover/th:opacity-100 transition-opacity">
         <ChevronUp className={`w-2.5 h-2.5 -mb-1 ${isActive && direction === 'asc' ? 'text-amber-500 opacity-100 scale-125' : 'text-gray-400'}`} />
         <ChevronDown className={`w-2.5 h-2.5 ${isActive && direction === 'desc' ? 'text-amber-500 opacity-100 scale-125' : 'text-gray-400'}`} />
       </div>
@@ -162,86 +152,56 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
     <div className="w-full max-w-[1400px] mx-auto space-y-10 animate-in fade-in duration-700">
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Portfolio Card */}
         <div className="bg-white dark:bg-[#1a1d26] rounded-[2.5rem] p-10 border-2 border-gray-100 dark:border-white/10 shadow-sm">
            <div className="flex justify-between items-baseline mb-12">
               <h3 className="text-4xl font-black text-gray-900 dark:text-white tracking-tighter italic">Portfolio</h3>
            </div>
-           
            <div className="grid grid-cols-2 gap-y-10">
               <div>
-                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">
-                  总资产 <Info className="w-3 h-3" />
-                </div>
+                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">总资产 <Info className="w-3 h-3" /></div>
                 <div className="text-3xl font-black text-[#12141c] dark:text-white">${stats.totalEquity.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
               </div>
               <div>
-                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">
-                  现金 <Info className="w-3 h-3" />
-                </div>
+                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">现金 <Info className="w-3 h-3" /></div>
                 <div className="text-3xl font-black text-[#12141c] dark:text-white">${stats.cash.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
               </div>
               <div>
-                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">
-                  现金占比 <Info className="w-3 h-3" />
-                </div>
+                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">现金占比 <Info className="w-3 h-3" /></div>
                 <div className="text-3xl font-black text-[#12141c] dark:text-white">{stats.cashPercent.toFixed(2)}%</div>
               </div>
               <div>
-                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">
-                  最大回撤 <Info className="w-3 h-3" />
-                </div>
+                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">最大回撤 <Info className="w-3 h-3" /></div>
                 <div className="text-3xl font-black text-[#12141c] dark:text-white">{stats.maxDrawdown.toFixed(2)}%</div>
               </div>
            </div>
         </div>
 
-        {/* P&L Card */}
         <div className="bg-white dark:bg-[#1a1d26] rounded-[2.5rem] p-10 border-2 border-gray-100 dark:border-white/10 shadow-sm flex flex-col">
            <div className="flex justify-between items-baseline mb-12">
               <h3 className="text-4xl font-black text-gray-900 dark:text-white tracking-tighter italic">P&L</h3>
            </div>
-           
            <div className="grid grid-cols-2 gap-y-10">
               <div>
-                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">
-                  今年以来 (YTD) 收益率 <Info className="w-3 h-3" />
-                </div>
-                <div className={`text-3xl font-black ${stats.ytdReturn >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                  {stats.ytdReturn >= 0 ? '+' : ''}{stats.ytdReturn.toFixed(2)}%
-                </div>
+                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">今年以来 (YTD) 收益率 <Info className="w-3 h-3" /></div>
+                <div className={`text-3xl font-black ${stats.ytdReturn >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>{stats.ytdReturn >= 0 ? '+' : ''}{stats.ytdReturn.toFixed(2)}%</div>
               </div>
               <div>
-                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">
-                  今年以来 (YTD) 收益额 <Info className="w-3 h-3" />
-                </div>
-                <div className={`text-3xl font-black ${stats.ytdProfit >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                  {stats.ytdProfit >= 0 ? '+' : ''}${stats.ytdProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </div>
-              </div>
-
-              <div>
-                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">
-                  本月以来 (MTD) 收益率 <Info className="w-3 h-3" />
-                </div>
-                <div className={`text-3xl font-black ${stats.mtdReturn >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                  {stats.mtdReturn >= 0 ? '+' : ''}{stats.mtdReturn.toFixed(2)}%
-                </div>
+                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">今年以来 (YTD) 收益额 <Info className="w-3 h-3" /></div>
+                <div className={`text-3xl font-black ${stats.ytdProfit >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>{stats.ytdProfit >= 0 ? '+' : ''}${stats.ytdProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
               </div>
               <div>
-                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">
-                  本月以来 (MTD) 收益额 <Info className="w-3 h-3" />
-                </div>
-                <div className={`text-3xl font-black ${stats.mtdProfit >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                  {stats.mtdProfit >= 0 ? '+' : ''}${stats.mtdProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </div>
+                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">本月以来 (MTD) 收益率 <Info className="w-3 h-3" /></div>
+                <div className={`text-3xl font-black ${stats.mtdReturn >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>{stats.mtdReturn >= 0 ? '+' : ''}{stats.mtdReturn.toFixed(2)}%</div>
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">本月以来 (MTD) 收益额 <Info className="w-3 h-3" /></div>
+                <div className={`text-3xl font-black ${stats.mtdProfit >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>{stats.mtdProfit >= 0 ? '+' : ''}${stats.mtdProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
               </div>
            </div>
         </div>
       </div>
 
       <div className="bg-white dark:bg-[#1a1d26] rounded-[2.5rem] shadow-sm border-2 border-gray-100 dark:border-white/10 overflow-hidden">
-        
         <div className="px-8 pt-8 pb-4 flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex bg-gray-50 dark:bg-white/5 p-1.5 rounded-2xl overflow-x-auto no-scrollbar gap-1">
             {tabs.map(tab => (
@@ -288,28 +248,60 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
                   <div className="flex items-center">标的 <SortArrows columnKey="symbol" /></div>
                 </th>
                 <th className="px-4 py-5 text-center font-black group/th cursor-pointer select-none" onClick={() => requestSort('category')}>
-                  <div className="flex items-center justify-center">类别 <SortArrows columnKey="category" /></div>
+                  <div className="flex items-center justify-center">
+                    <div className="w-5 shrink-0 invisible" aria-hidden="true" />
+                    <span className="flex-grow">类别</span>
+                    <div className="w-5 shrink-0 flex justify-start"><SortArrows columnKey="category" /></div>
+                  </div>
                 </th>
                 <th className="px-4 py-5 text-center font-black group/th cursor-pointer select-none" onClick={() => requestSort('status')}>
-                  <div className="flex items-center justify-center">状态 <SortArrows columnKey="status" /></div>
+                  <div className="flex items-center justify-center">
+                    <div className="w-5 shrink-0 invisible" aria-hidden="true" />
+                    <span className="flex-grow">状态</span>
+                    <div className="w-5 shrink-0 flex justify-start"><SortArrows columnKey="status" /></div>
+                  </div>
                 </th>
                 <th className="px-4 py-5 text-center font-black group/th cursor-pointer select-none" onClick={() => requestSort('side')}>
-                  <div className="flex items-center justify-center">方向 <SortArrows columnKey="side" /></div>
+                  <div className="flex items-center justify-center">
+                    <div className="w-5 shrink-0 invisible" aria-hidden="true" />
+                    <span className="flex-grow">方向</span>
+                    <div className="w-5 shrink-0 flex justify-start"><SortArrows columnKey="side" /></div>
+                  </div>
                 </th>
                 <th className="px-4 py-5 text-center font-black group/th cursor-pointer select-none" onClick={() => requestSort('signalType')}>
-                  <div className="flex items-center justify-center">周期 <SortArrows columnKey="signalType" /></div>
+                  <div className="flex items-center justify-center">
+                    <div className="w-5 shrink-0 invisible" aria-hidden="true" />
+                    <span className="flex-grow">周期</span>
+                    <div className="w-5 shrink-0 flex justify-start"><SortArrows columnKey="signalType" /></div>
+                  </div>
                 </th>
                 <th className="px-4 py-5 text-center font-black group/th cursor-pointer select-none" onClick={() => requestSort('entryPrice')}>
-                  <div className="flex items-center justify-center">入场价 <SortArrows columnKey="entryPrice" /></div>
+                  <div className="flex items-center justify-center">
+                    <div className="w-5 shrink-0 invisible" aria-hidden="true" />
+                    <span className="flex-grow">入场价</span>
+                    <div className="w-5 shrink-0 flex justify-start"><SortArrows columnKey="entryPrice" /></div>
+                  </div>
                 </th>
                 <th className="px-4 py-5 text-center font-black group/th cursor-pointer select-none" onClick={() => requestSort('yieldRate')}>
-                  <div className="flex items-center justify-center">收益率 <SortArrows columnKey="yieldRate" /></div>
+                  <div className="flex items-center justify-center">
+                    <div className="w-5 shrink-0 invisible" aria-hidden="true" />
+                    <span className="flex-grow">收益率</span>
+                    <div className="w-5 shrink-0 flex justify-start"><SortArrows columnKey="yieldRate" /></div>
+                  </div>
                 </th>
                 <th className="px-4 py-5 text-center font-black group/th cursor-pointer select-none" onClick={() => requestSort('yieldAmount')}>
-                  <div className="flex items-center justify-center">收益额 <SortArrows columnKey="yieldAmount" /></div>
+                  <div className="flex items-center justify-center">
+                    <div className="w-5 shrink-0 invisible" aria-hidden="true" />
+                    <span className="flex-grow">收益额</span>
+                    <div className="w-5 shrink-0 flex justify-start"><SortArrows columnKey="yieldAmount" /></div>
+                  </div>
                 </th>
                 <th className="px-4 py-5 text-center font-black group/th cursor-pointer select-none" onClick={() => requestSort('updatedAt')}>
-                  <div className="flex items-center justify-center">记录时间 <SortArrows columnKey="updatedAt" /></div>
+                  <div className="flex items-center justify-center">
+                    <div className="w-5 shrink-0 invisible" aria-hidden="true" />
+                    <span className="flex-grow">记录时间</span>
+                    <div className="w-5 shrink-0 flex justify-start"><SortArrows columnKey="updatedAt" /></div>
+                  </div>
                 </th>
                 {isAdmin && <th className="px-8 py-5 text-right font-black">管理</th>}
               </tr>
@@ -321,50 +313,46 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
                     <div className="text-[15px] font-black text-[#12141c] dark:text-white tracking-tight">{pos.symbol}</div>
                   </td>
                   <td className="px-4 py-5 text-center">
-                    <span className="inline-block text-[12px] font-bold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-white/5 px-2 py-1 rounded-lg">
-                      {pos.category}
-                    </span>
+                    <span className="inline-block text-[12px] font-bold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-white/5 px-2 py-1 rounded-lg">{pos.category}</span>
                   </td>
                   <td className="px-4 py-5 text-center">
-                    <span className={`inline-block px-3 py-1 rounded-lg text-[11px] font-black uppercase ${getStatusStyle(pos.status)}`}>
-                      {pos.status}
-                    </span>
+                    <span className={`inline-block px-3 py-1 rounded-lg text-[11px] font-black uppercase ${getStatusStyle(pos.status)}`}>{pos.status}</span>
                   </td>
                   <td className="px-4 py-5 text-center">
-                    <span className={`text-[14px] font-black ${pos.side === 'Buy' ? 'text-emerald-500' : 'text-red-500'}`}>
-                      {pos.side === 'Buy' ? '买入' : '卖出'}
-                    </span>
+                    <span className={`text-[14px] font-black ${pos.side === 'Buy' ? 'text-emerald-500' : 'text-red-500'}`}>{pos.side === 'Buy' ? '买入' : '卖出'}</span>
                   </td>
-                  <td className="px-4 py-5 text-center text-[13px] font-medium text-gray-500 dark:text-gray-400">
-                    {translateSignalType(pos.signalType)}
-                  </td>
-                  <td className="px-4 py-5 text-center text-[14px] font-black text-[#12141c] dark:text-white">
-                    {pos.status === '观察中' && (!pos.entryPrice || pos.entryPrice === 0) ? '/' : pos.entryPrice.toLocaleString()}
-                  </td>
-                  <td className="px-4 py-5 text-center">
-                    <div className={`flex items-center justify-center gap-1 text-[14px] font-black ${pos.yieldRate >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                      {pos.yieldRate >= 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
-                      {pos.yieldRate}%
+                  <td className="px-4 py-5 text-center text-[13px] font-medium text-gray-500 dark:text-gray-400">{translateSignalType(pos.signalType)}</td>
+                  <td className="px-4 py-5 text-center text-[14px] font-black text-[#12141c] dark:text-white">{pos.status === '观察中' && (!pos.entryPrice || pos.entryPrice === 0) ? '/' : pos.entryPrice.toLocaleString()}</td>
+                  <td className="px-4 py-5">
+                    <div className="flex items-center justify-center">
+                      <div className="w-6 shrink-0 flex justify-end">
+                        {pos.yieldRate >= 0 ? <TrendingUp className="w-3.5 h-3.5 text-emerald-500" /> : <TrendingDown className="w-3.5 h-3.5 text-red-500" />}
+                      </div>
+                      <span className={`flex-grow text-center text-[14px] font-black ${pos.yieldRate >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                        {pos.yieldRate}%
+                      </span>
+                      <div className="w-6 shrink-0 invisible" aria-hidden="true" />
                     </div>
                   </td>
                   <td className="px-4 py-5 text-center">
-                    <div className={`text-[14px] font-black ${pos.yieldAmount >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                      {pos.yieldAmount >= 0 ? '+' : ''}${pos.yieldAmount?.toLocaleString()}
-                    </div>
+                    <div className={`text-[14px] font-black ${pos.yieldAmount >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>{pos.yieldAmount >= 0 ? '+' : ''}${pos.yieldAmount?.toLocaleString()}</div>
                   </td>
-                  <td className="px-4 py-5 text-center">
-                    <div className="flex items-center justify-center gap-2 text-[12px] text-gray-400 font-medium">
-                      <Calendar className="w-3 h-3" />
-                      {new Date(pos.updatedAt).toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' })}
+                  <td className="px-4 py-5">
+                    <div className="flex items-center justify-center">
+                      <div className="w-6 shrink-0 flex justify-end">
+                        <Calendar className="w-3 h-3 text-gray-400" />
+                      </div>
+                      <span className="flex-grow text-center text-[12px] text-gray-400 font-medium">
+                        {new Date(pos.updatedAt).toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' })}
+                      </span>
+                      <div className="w-6 shrink-0 invisible" aria-hidden="true" />
                     </div>
                   </td>
                   {isAdmin && (
                     <td className="px-8 py-5 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <div className="flex items-center gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button onClick={() => onEdit(pos)} title="编辑" className="p-2 text-gray-300 hover:text-amber-500 transition-colors"><Edit2 className="w-4 h-4" /></button>
-                          <button onClick={() => onDelete(pos.id)} title="删除" className="p-2 text-gray-300 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
-                        </div>
+                      <div className="flex items-center justify-end gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button type="button" onClick={(e) => { e.stopPropagation(); onEdit(pos); }} title="编辑" className="p-2 text-gray-300 hover:text-amber-500 transition-colors"><Edit2 className="w-4 h-4" /></button>
+                        <button type="button" onClick={(e) => { e.stopPropagation(); onDelete(pos.id); }} title="删除" className="p-2 text-gray-300 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
                       </div>
                     </td>
                   )}

@@ -75,7 +75,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, config, 
           <div className="p-4 bg-blue-50 dark:bg-blue-900/10 rounded-2xl border border-blue-100 dark:border-blue-900/20 flex gap-3">
             <Shield className="w-5 h-5 text-blue-500 shrink-0" />
             <p className="text-[11px] text-blue-600 dark:text-blue-400 font-bold leading-relaxed uppercase tracking-tight">
-              系统将根据你标记的“闹钟”图标实时追踪行情，并在触发表单逻辑（如收益率波动 > 5% 或 达到止盈点位）时自动推送邮件。
+              系统将根据你标记的“闹钟”图标实时追踪行情，并在触发表单逻辑（如收益率波动 &gt; 5% 或 达到止盈点位）时自动推送邮件。
             </p>
           </div>
 

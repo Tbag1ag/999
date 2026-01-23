@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { MarketInsight, Category, CompletionStatus, SortMode, JournalEntry, EntryType, AppNotification, FearGreedIndex, PositionEntry, PositionStatus, PositionSide } from './types';
 import { CATEGORIES, INITIAL_INSIGHTS } from './constants';
@@ -245,7 +246,6 @@ const App: React.FC = () => {
     };
     if (sql) {
       try {
-        // Fix: Use correct camelCase property names from newInsight when inserting into database
         await sql`
           INSERT INTO insights (id, symbol, category, status, focus_points, strategy, entry_level, updated_at, completion_status)
           VALUES (${newInsight.id}, ${newInsight.symbol}, ${newInsight.category}, ${newInsight.status}, ${newInsight.focusPoints}, ${newInsight.strategy}, ${newInsight.entryLevel}, ${newInsight.updatedAt}, ${newInsight.completionStatus})
@@ -405,7 +405,7 @@ const App: React.FC = () => {
             <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition-all ${isAdmin ? 'bg-amber-500 shadow-xl shadow-amber-200 dark:shadow-none animate-pulse' : 'bg-[#12141c] dark:bg-amber-500'}`}>
               <LayoutGrid className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <h1 className="text-lg sm:text-xl font-black text-[#12141c] dark:text-white tracking-tighter">市场周刊</h1>
+            <h1 className="text-lg sm:text-xl font-black text-[#12141c] dark:text-white tracking-tighter text-left">市场周刊</h1>
           </div>
           
           <div className="flex-grow flex items-center gap-4 max-w-3xl">
@@ -466,10 +466,10 @@ const App: React.FC = () => {
         <main className="flex-grow">
           <div className="mb-8 sm:mb-12">
             <h2 className="text-4xl sm:text-6xl font-black text-[#12141c] dark:text-white tracking-tighter leading-tight italic mb-6 sm:mb-10 transition-colors">
-              {sortMode === 'journal' ? <>信息捕捉<br className="hidden sm:block" />瀑布流。</> 
-               : sortMode === 'feargreed' ? <>恐慌贪婪<br className="hidden sm:block" />市场热力。</>
-               : sortMode === 'positions' ? <>小波小太<br className="hidden sm:block" />仓位追踪。</>
-               : <>追踪行情，<br className="hidden sm:block" />每日洞察。</>}
+              {sortMode === 'journal' ? <>信息捕捉<br />瀑布流。</> 
+               : sortMode === 'feargreed' ? <>恐慌贪婪<br />市场热力。</>
+               : sortMode === 'positions' ? <>小波小太<br />仓位追踪。</>
+               : <>追踪行情，<br />每日洞察。</>}
             </h2>
           </div>
 

@@ -149,66 +149,66 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
   };
 
   return (
-    <div className="w-full max-w-[1400px] mx-auto space-y-10 animate-in fade-in duration-700">
+    <div className="w-full max-w-[1400px] mx-auto space-y-6 sm:space-y-10 animate-in fade-in duration-700">
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white dark:bg-[#1a1d26] rounded-[2.5rem] p-10 border-2 border-gray-100 dark:border-white/10 shadow-sm">
-           <div className="flex justify-between items-baseline mb-12">
-              <h3 className="text-4xl font-black text-gray-900 dark:text-white tracking-tighter italic">Portfolio</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+        <div className="bg-white dark:bg-[#1a1d26] rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 border-2 border-gray-100 dark:border-white/10 shadow-sm">
+           <div className="flex justify-between items-baseline mb-8 sm:mb-12">
+              <h3 className="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white tracking-tighter italic">Portfolio</h3>
            </div>
-           <div className="grid grid-cols-2 gap-y-10">
-              <div>
-                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">总资产 <Info className="w-3 h-3" /></div>
-                <div className="text-3xl font-black text-[#12141c] dark:text-white">${stats.totalEquity.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+           <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-y-10">
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 truncate">总资产 <Info className="w-2.5 h-2.5 sm:w-3 sm:h-3" /></div>
+                <div className="text-lg xs:text-xl sm:text-2xl lg:text-3xl font-black text-[#12141c] dark:text-white break-words">${stats.totalEquity.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
               </div>
-              <div>
-                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">现金 <Info className="w-3 h-3" /></div>
-                <div className="text-3xl font-black text-[#12141c] dark:text-white">${stats.cash.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 truncate">现金 <Info className="w-2.5 h-2.5 sm:w-3 sm:h-3" /></div>
+                <div className="text-lg xs:text-xl sm:text-2xl lg:text-3xl font-black text-[#12141c] dark:text-white break-words">${stats.cash.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
               </div>
-              <div>
-                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">现金占比 <Info className="w-3 h-3" /></div>
-                <div className="text-3xl font-black text-[#12141c] dark:text-white">{stats.cashPercent.toFixed(2)}%</div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 truncate">现金占比 <Info className="w-2.5 h-2.5 sm:w-3 sm:h-3" /></div>
+                <div className="text-lg xs:text-xl sm:text-2xl lg:text-3xl font-black text-[#12141c] dark:text-white break-words">{stats.cashPercent.toFixed(1)}%</div>
               </div>
-              <div>
-                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">最大回撤 <Info className="w-3 h-3" /></div>
-                <div className="text-3xl font-black text-[#12141c] dark:text-white">{stats.maxDrawdown.toFixed(2)}%</div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 truncate">最大回撤 <Info className="w-2.5 h-2.5 sm:w-3 sm:h-3" /></div>
+                <div className="text-lg xs:text-xl sm:text-2xl lg:text-3xl font-black text-[#12141c] dark:text-white break-words">{stats.maxDrawdown.toFixed(1)}%</div>
               </div>
            </div>
         </div>
 
-        <div className="bg-white dark:bg-[#1a1d26] rounded-[2.5rem] p-10 border-2 border-gray-100 dark:border-white/10 shadow-sm flex flex-col">
-           <div className="flex justify-between items-baseline mb-12">
-              <h3 className="text-4xl font-black text-gray-900 dark:text-white tracking-tighter italic">P&L</h3>
+        <div className="bg-white dark:bg-[#1a1d26] rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 border-2 border-gray-100 dark:border-white/10 shadow-sm flex flex-col">
+           <div className="flex justify-between items-baseline mb-8 sm:mb-12">
+              <h3 className="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white tracking-tighter italic">P&L</h3>
            </div>
-           <div className="grid grid-cols-2 gap-y-10">
-              <div>
-                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">今年以来 (YTD) 收益率 <Info className="w-3 h-3" /></div>
-                <div className={`text-3xl font-black ${stats.ytdReturn >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>{stats.ytdReturn >= 0 ? '+' : ''}{stats.ytdReturn.toFixed(2)}%</div>
+           <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-y-10">
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 truncate">YTD 收益率 <Info className="w-2.5 h-2.5 sm:w-3 sm:h-3" /></div>
+                <div className={`text-lg xs:text-xl sm:text-2xl lg:text-3xl font-black ${stats.ytdReturn >= 0 ? 'text-emerald-500' : 'text-red-500'} break-words`}>{stats.ytdReturn >= 0 ? '+' : ''}{stats.ytdReturn.toFixed(1)}%</div>
               </div>
-              <div>
-                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">今年以来 (YTD) 收益额 <Info className="w-3 h-3" /></div>
-                <div className={`text-3xl font-black ${stats.ytdProfit >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>{stats.ytdProfit >= 0 ? '+' : ''}${stats.ytdProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 truncate">YTD 收益额 <Info className="w-2.5 h-2.5 sm:w-3 sm:h-3" /></div>
+                <div className={`text-lg xs:text-xl sm:text-2xl lg:text-3xl font-black ${stats.ytdProfit >= 0 ? 'text-emerald-500' : 'text-red-500'} break-words`}>{stats.ytdProfit >= 0 ? '+' : ''}${stats.ytdProfit.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
               </div>
-              <div>
-                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">本月以来 (MTD) 收益率 <Info className="w-3 h-3" /></div>
-                <div className={`text-3xl font-black ${stats.mtdReturn >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>{stats.mtdReturn >= 0 ? '+' : ''}{stats.mtdReturn.toFixed(2)}%</div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 truncate">MTD 收益率 <Info className="w-2.5 h-2.5 sm:w-3 sm:h-3" /></div>
+                <div className={`text-lg xs:text-xl sm:text-2xl lg:text-3xl font-black ${stats.mtdReturn >= 0 ? 'text-emerald-500' : 'text-red-500'} break-words`}>{stats.mtdReturn >= 0 ? '+' : ''}{stats.mtdReturn.toFixed(1)}%</div>
               </div>
-              <div>
-                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">本月以来 (MTD) 收益额 <Info className="w-3 h-3" /></div>
-                <div className={`text-3xl font-black ${stats.mtdProfit >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>{stats.mtdProfit >= 0 ? '+' : ''}${stats.mtdProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 truncate">MTD 收益额 <Info className="w-2.5 h-2.5 sm:w-3 sm:h-3" /></div>
+                <div className={`text-lg xs:text-xl sm:text-2xl lg:text-3xl font-black ${stats.mtdProfit >= 0 ? 'text-emerald-500' : 'text-red-500'} break-words`}>{stats.mtdProfit >= 0 ? '+' : ''}${stats.mtdProfit.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
               </div>
            </div>
         </div>
       </div>
 
-      <div className="bg-white dark:bg-[#1a1d26] rounded-[2.5rem] shadow-sm border-2 border-gray-100 dark:border-white/10 overflow-hidden">
-        <div className="px-8 pt-8 pb-4 flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="flex bg-gray-50 dark:bg-white/5 p-1.5 rounded-2xl overflow-x-auto no-scrollbar gap-1">
+      <div className="bg-white dark:bg-[#1a1d26] rounded-[2rem] sm:rounded-[2.5rem] shadow-sm border-2 border-gray-100 dark:border-white/10 overflow-hidden">
+        <div className="px-6 sm:px-8 pt-6 sm:pt-8 pb-4 flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6">
+          <div className="flex bg-gray-50 dark:bg-white/5 p-1 rounded-xl sm:rounded-2xl overflow-x-auto no-scrollbar gap-1 w-full sm:w-auto">
             {tabs.map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-6 py-2.5 rounded-xl text-[13px] font-black transition-all whitespace-nowrap ${
+                className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-[11px] sm:text-[13px] font-black transition-all whitespace-nowrap ${
                   activeTab === tab 
                   ? 'bg-[#12141c] dark:bg-amber-500 text-white shadow-lg' 
                   : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
@@ -218,21 +218,21 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
             <button 
               onClick={exportToCSV}
-              className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 dark:bg-white/5 hover:bg-amber-500 hover:text-white dark:hover:bg-amber-500 rounded-xl text-[13px] font-black text-gray-400 transition-all shadow-sm active:scale-95"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 sm:py-2.5 bg-gray-50 dark:bg-white/5 hover:bg-amber-500 hover:text-white dark:hover:bg-amber-500 rounded-xl text-[11px] sm:text-[13px] font-black text-gray-400 transition-all shadow-sm active:scale-95"
               title="导出当前表格数据"
             >
-              <Download className="w-4 h-4" />
-              <span>导出 CSV</span>
+              <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span>CSV</span>
             </button>
-            <div className="relative group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 group-focus-within:text-amber-500 transition-colors" />
+            <div className="relative group flex-grow sm:flex-none">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-300 group-focus-within:text-amber-500 transition-colors" />
               <input 
                 type="text"
-                placeholder="搜索资产代码..."
-                className="bg-gray-50 dark:bg-white/5 border-2 border-transparent focus:bg-white dark:focus:bg-[#1a1d26] focus:border-gray-100 dark:focus:border-white/10 py-2.5 pl-11 pr-4 rounded-xl outline-none text-[13px] font-bold dark:text-white transition-all w-48 sm:w-64"
+                placeholder="搜索资产..."
+                className="w-full sm:w-48 lg:w-64 bg-gray-50 dark:bg-white/5 border-2 border-transparent focus:bg-white dark:focus:bg-[#1a1d26] focus:border-gray-100 dark:focus:border-white/10 py-2 sm:py-2.5 pl-10 sm:pl-11 pr-4 rounded-xl outline-none text-[11px] sm:text-[13px] font-bold dark:text-white transition-all"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
@@ -240,119 +240,119 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
+        <div className="overflow-x-auto scrollbar-hide">
+          <table className="w-full border-collapse min-w-[800px]">
             <thead>
-              <tr className="border-y-2 border-gray-100 dark:border-white/10 text-[11px] font-black text-gray-900 dark:text-gray-300 uppercase tracking-widest bg-gray-50/30 dark:bg-white/1">
-                <th className="px-8 py-5 text-left font-black group/th cursor-pointer select-none" onClick={() => requestSort('symbol')}>
+              <tr className="border-y-2 border-gray-100 dark:border-white/10 text-[10px] sm:text-[11px] font-black text-gray-900 dark:text-gray-300 uppercase tracking-widest bg-gray-50/30 dark:bg-white/1">
+                <th className="px-6 sm:px-8 py-4 sm:py-5 text-left font-black group/th cursor-pointer select-none" onClick={() => requestSort('symbol')}>
                   <div className="flex items-center">标的 <SortArrows columnKey="symbol" /></div>
                 </th>
-                <th className="px-4 py-5 text-center font-black group/th cursor-pointer select-none" onClick={() => requestSort('category')}>
+                <th className="px-3 sm:px-4 py-4 sm:py-5 text-center font-black group/th cursor-pointer select-none" onClick={() => requestSort('category')}>
                   <div className="flex items-center justify-center">
-                    <div className="w-5 shrink-0 invisible" aria-hidden="true" />
+                    <div className="w-4 shrink-0 invisible" aria-hidden="true" />
                     <span className="flex-grow">类别</span>
-                    <div className="w-5 shrink-0 flex justify-start"><SortArrows columnKey="category" /></div>
+                    <div className="w-4 shrink-0 flex justify-start"><SortArrows columnKey="category" /></div>
                   </div>
                 </th>
-                <th className="px-4 py-5 text-center font-black group/th cursor-pointer select-none" onClick={() => requestSort('status')}>
+                <th className="px-3 sm:px-4 py-4 sm:py-5 text-center font-black group/th cursor-pointer select-none" onClick={() => requestSort('status')}>
                   <div className="flex items-center justify-center">
-                    <div className="w-5 shrink-0 invisible" aria-hidden="true" />
+                    <div className="w-4 shrink-0 invisible" aria-hidden="true" />
                     <span className="flex-grow">状态</span>
-                    <div className="w-5 shrink-0 flex justify-start"><SortArrows columnKey="status" /></div>
+                    <div className="w-4 shrink-0 flex justify-start"><SortArrows columnKey="status" /></div>
                   </div>
                 </th>
-                <th className="px-4 py-5 text-center font-black group/th cursor-pointer select-none" onClick={() => requestSort('side')}>
+                <th className="px-3 sm:px-4 py-4 sm:py-5 text-center font-black group/th cursor-pointer select-none" onClick={() => requestSort('side')}>
                   <div className="flex items-center justify-center">
-                    <div className="w-5 shrink-0 invisible" aria-hidden="true" />
+                    <div className="w-4 shrink-0 invisible" aria-hidden="true" />
                     <span className="flex-grow">方向</span>
-                    <div className="w-5 shrink-0 flex justify-start"><SortArrows columnKey="side" /></div>
+                    <div className="w-4 shrink-0 flex justify-start"><SortArrows columnKey="side" /></div>
                   </div>
                 </th>
-                <th className="px-4 py-5 text-center font-black group/th cursor-pointer select-none" onClick={() => requestSort('signalType')}>
+                <th className="px-3 sm:px-4 py-4 sm:py-5 text-center font-black group/th cursor-pointer select-none" onClick={() => requestSort('signalType')}>
                   <div className="flex items-center justify-center">
-                    <div className="w-5 shrink-0 invisible" aria-hidden="true" />
+                    <div className="w-4 shrink-0 invisible" aria-hidden="true" />
                     <span className="flex-grow">周期</span>
-                    <div className="w-5 shrink-0 flex justify-start"><SortArrows columnKey="signalType" /></div>
+                    <div className="w-4 shrink-0 flex justify-start"><SortArrows columnKey="signalType" /></div>
                   </div>
                 </th>
-                <th className="px-4 py-5 text-center font-black group/th cursor-pointer select-none" onClick={() => requestSort('entryPrice')}>
+                <th className="px-3 sm:px-4 py-4 sm:py-5 text-center font-black group/th cursor-pointer select-none" onClick={() => requestSort('entryPrice')}>
                   <div className="flex items-center justify-center">
-                    <div className="w-5 shrink-0 invisible" aria-hidden="true" />
+                    <div className="w-4 shrink-0 invisible" aria-hidden="true" />
                     <span className="flex-grow">入场价</span>
-                    <div className="w-5 shrink-0 flex justify-start"><SortArrows columnKey="entryPrice" /></div>
+                    <div className="w-4 shrink-0 flex justify-start"><SortArrows columnKey="entryPrice" /></div>
                   </div>
                 </th>
-                <th className="px-4 py-5 text-center font-black group/th cursor-pointer select-none" onClick={() => requestSort('yieldRate')}>
+                <th className="px-3 sm:px-4 py-4 sm:py-5 text-center font-black group/th cursor-pointer select-none" onClick={() => requestSort('yieldRate')}>
                   <div className="flex items-center justify-center">
-                    <div className="w-5 shrink-0 invisible" aria-hidden="true" />
+                    <div className="w-4 shrink-0 invisible" aria-hidden="true" />
                     <span className="flex-grow">收益率</span>
-                    <div className="w-5 shrink-0 flex justify-start"><SortArrows columnKey="yieldRate" /></div>
+                    <div className="w-4 shrink-0 flex justify-start"><SortArrows columnKey="yieldRate" /></div>
                   </div>
                 </th>
-                <th className="px-4 py-5 text-center font-black group/th cursor-pointer select-none" onClick={() => requestSort('yieldAmount')}>
+                <th className="px-3 sm:px-4 py-4 sm:py-5 text-center font-black group/th cursor-pointer select-none" onClick={() => requestSort('yieldAmount')}>
                   <div className="flex items-center justify-center">
-                    <div className="w-5 shrink-0 invisible" aria-hidden="true" />
+                    <div className="w-4 shrink-0 invisible" aria-hidden="true" />
                     <span className="flex-grow">收益额</span>
-                    <div className="w-5 shrink-0 flex justify-start"><SortArrows columnKey="yieldAmount" /></div>
+                    <div className="w-4 shrink-0 flex justify-start"><SortArrows columnKey="yieldAmount" /></div>
                   </div>
                 </th>
-                <th className="px-4 py-5 text-center font-black group/th cursor-pointer select-none" onClick={() => requestSort('updatedAt')}>
+                <th className="px-3 sm:px-4 py-4 sm:py-5 text-center font-black group/th cursor-pointer select-none" onClick={() => requestSort('updatedAt')}>
                   <div className="flex items-center justify-center">
-                    <div className="w-5 shrink-0 invisible" aria-hidden="true" />
+                    <div className="w-4 shrink-0 invisible" aria-hidden="true" />
                     <span className="flex-grow">记录时间</span>
-                    <div className="w-5 shrink-0 flex justify-start"><SortArrows columnKey="updatedAt" /></div>
+                    <div className="w-4 shrink-0 flex justify-start"><SortArrows columnKey="updatedAt" /></div>
                   </div>
                 </th>
-                {isAdmin && <th className="px-8 py-5 text-right font-black">管理</th>}
+                {isAdmin && <th className="px-6 sm:px-8 py-4 sm:py-5 text-right font-black">管理</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-white/10">
               {processedPositions.map((pos) => (
                 <tr key={pos.id} className="group hover:bg-gray-50/50 dark:hover:bg-white/2 transition-colors">
-                  <td className="px-8 py-5">
-                    <div className="text-[15px] font-black text-[#12141c] dark:text-white tracking-tight">{pos.symbol}</div>
+                  <td className="px-6 sm:px-8 py-4 sm:py-5">
+                    <div className="text-[14px] sm:text-[15px] font-black text-[#12141c] dark:text-white tracking-tight">{pos.symbol}</div>
                   </td>
-                  <td className="px-4 py-5 text-center">
-                    <span className="inline-block text-[12px] font-bold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-white/5 px-2 py-1 rounded-lg">{pos.category}</span>
+                  <td className="px-3 sm:px-4 py-4 sm:py-5 text-center">
+                    <span className="inline-block text-[11px] sm:text-[12px] font-bold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded-lg">{pos.category}</span>
                   </td>
-                  <td className="px-4 py-5 text-center">
-                    <span className={`inline-block px-3 py-1 rounded-lg text-[11px] font-black uppercase ${getStatusStyle(pos.status)}`}>{pos.status}</span>
+                  <td className="px-3 sm:px-4 py-4 sm:py-5 text-center">
+                    <span className={`inline-block px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg text-[10px] sm:text-[11px] font-black uppercase ${getStatusStyle(pos.status)}`}>{pos.status}</span>
                   </td>
-                  <td className="px-4 py-5 text-center">
-                    <span className={`text-[14px] font-black ${pos.side === 'Buy' ? 'text-emerald-500' : 'text-red-500'}`}>{pos.side === 'Buy' ? '买入' : '卖出'}</span>
+                  <td className="px-3 sm:px-4 py-4 sm:py-5 text-center">
+                    <span className={`text-[13px] sm:text-[14px] font-black ${pos.side === 'Buy' ? 'text-emerald-500' : 'text-red-500'}`}>{pos.side === 'Buy' ? '买入' : '卖出'}</span>
                   </td>
-                  <td className="px-4 py-5 text-center text-[13px] font-medium text-gray-500 dark:text-gray-400">{translateSignalType(pos.signalType)}</td>
-                  <td className="px-4 py-5 text-center text-[14px] font-black text-[#12141c] dark:text-white">{pos.status === '观察中' && (!pos.entryPrice || pos.entryPrice === 0) ? '/' : pos.entryPrice.toLocaleString()}</td>
-                  <td className="px-4 py-5">
+                  <td className="px-3 sm:px-4 py-4 sm:py-5 text-center text-[12px] sm:text-[13px] font-medium text-gray-500 dark:text-gray-400">{translateSignalType(pos.signalType)}</td>
+                  <td className="px-3 sm:px-4 py-4 sm:py-5 text-center text-[13px] sm:text-[14px] font-black text-[#12141c] dark:text-white">{pos.status === '观察中' && (!pos.entryPrice || pos.entryPrice === 0) ? '/' : pos.entryPrice.toLocaleString()}</td>
+                  <td className="px-3 sm:px-4 py-4 sm:py-5">
                     <div className="flex items-center justify-center">
-                      <div className="w-6 shrink-0 flex justify-end">
-                        {pos.yieldRate >= 0 ? <TrendingUp className="w-3.5 h-3.5 text-emerald-500" /> : <TrendingDown className="w-3.5 h-3.5 text-red-500" />}
+                      <div className="w-5 shrink-0 flex justify-end">
+                        {pos.yieldRate >= 0 ? <TrendingUp className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-emerald-500" /> : <TrendingDown className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-red-500" />}
                       </div>
-                      <span className={`flex-grow text-center text-[14px] font-black ${pos.yieldRate >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                      <span className={`flex-grow text-center text-[13px] sm:text-[14px] font-black ${pos.yieldRate >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
                         {pos.yieldRate}%
                       </span>
-                      <div className="w-6 shrink-0 invisible" aria-hidden="true" />
+                      <div className="w-5 shrink-0 invisible" aria-hidden="true" />
                     </div>
                   </td>
-                  <td className="px-4 py-5 text-center">
-                    <div className={`text-[14px] font-black ${pos.yieldAmount >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>{pos.yieldAmount >= 0 ? '+' : ''}${pos.yieldAmount?.toLocaleString()}</div>
+                  <td className="px-3 sm:px-4 py-4 sm:py-5 text-center">
+                    <div className={`text-[13px] sm:text-[14px] font-black ${pos.yieldAmount >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>{pos.yieldAmount >= 0 ? '+' : ''}${pos.yieldAmount?.toLocaleString()}</div>
                   </td>
-                  <td className="px-4 py-5">
+                  <td className="px-3 sm:px-4 py-4 sm:py-5">
                     <div className="flex items-center justify-center">
-                      <div className="w-6 shrink-0 flex justify-end">
+                      <div className="w-5 shrink-0 flex justify-end">
                         <Calendar className="w-3 h-3 text-gray-400" />
                       </div>
-                      <span className="flex-grow text-center text-[12px] text-gray-400 font-medium">
+                      <span className="flex-grow text-center text-[11px] sm:text-[12px] text-gray-400 font-medium">
                         {new Date(pos.updatedAt).toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' })}
                       </span>
-                      <div className="w-6 shrink-0 invisible" aria-hidden="true" />
+                      <div className="w-5 shrink-0 invisible" aria-hidden="true" />
                     </div>
                   </td>
                   {isAdmin && (
-                    <td className="px-8 py-5 text-right">
+                    <td className="px-6 sm:px-8 py-4 sm:py-5 text-right">
                       <div className="flex items-center justify-end gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button type="button" onClick={(e) => { e.stopPropagation(); onEdit(pos); }} title="编辑" className="p-2 text-gray-300 hover:text-amber-500 transition-colors"><Edit2 className="w-4 h-4" /></button>
-                        <button type="button" onClick={(e) => { e.stopPropagation(); onDelete(pos.id); }} title="删除" className="p-2 text-gray-300 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                        <button type="button" onClick={(e) => { e.stopPropagation(); onEdit(pos); }} title="编辑" className="p-1.5 sm:p-2 text-gray-300 hover:text-amber-500 transition-colors"><Edit2 className="w-3.5 sm:w-4 h-3.5 sm:h-4" /></button>
+                        <button type="button" onClick={(e) => { e.stopPropagation(); onDelete(pos.id); }} title="删除" className="p-1.5 sm:p-2 text-gray-300 hover:text-red-500 transition-colors"><Trash2 className="w-3.5 sm:w-4 h-3.5 sm:h-4" /></button>
                       </div>
                     </td>
                   )}

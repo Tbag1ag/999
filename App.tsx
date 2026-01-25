@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { MarketInsight, SortMode, JournalEntry, FearGreedIndex, PositionEntry } from './types';
+import { MarketInsight, SortMode, JournalEntry, PositionEntry } from './types';
 import { INITIAL_INSIGHTS } from './constants';
 import MarketCard from './components/MarketCard';
 import InsightForm from './components/InsightForm';
@@ -15,13 +15,11 @@ import {
   Zap, 
   Sun, 
   Moon, 
-  TrendingUp, 
-  Settings,
-  Image as ImageIcon
+  TrendingUp
 } from 'lucide-react';
 
 const ADMIN_PASSWORD = "8888"; 
-const DEFAULT_BG = 'https://images.unsplash.com/photo-1722104946563-bdf378a766d0?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+const DEFAULT_BG = 'https://images.pexels.com/photos/3458700/pexels-photo-3458700.jpeg';
 
 const App: React.FC = () => {
   const [insights, setInsights] = useState<MarketInsight[]>([]);
@@ -32,8 +30,9 @@ const App: React.FC = () => {
   // UI States
   const [isAdmin, setIsAdmin] = useState(() => localStorage.getItem('is_admin') === 'true');
   const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('theme') === 'dark');
-  const [bgImage, setBgImage] = useState(() => localStorage.getItem('app_wallpaper') || DEFAULT_BG);
+  const [bgImage] = useState(DEFAULT_BG);
   const [sortMode, setSortMode] = useState<SortMode>('category');
+  const [logoClicks, setLogoClicks] = useState(0);
 
   // Form States
   const [showInsightForm, setShowInsightForm] = useState(false);
@@ -73,12 +72,34 @@ const App: React.FC = () => {
 
   useEffect(() => { fetchData(); }, []);
 
-  // CRUD Handlers
+  const handleToggleAdmin = () => {
+    if (!isAdmin) {
+      const password = prompt("请输入管理密码开启编辑模式:");
+      if (password === ADMIN_PASSWORD) {
+        setIsAdmin(true);
+        localStorage.setItem('is_admin', 'true');
+      }
+    } else {
+      setIsAdmin(false);
+      localStorage.removeItem('is_admin');
+    }
+  };
+
+  const handleLogoClick = () => {
+    const nextClicks = logoClicks + 1;
+    if (nextClicks >= 4) {
+      handleToggleAdmin();
+      setLogoClicks(0);
+    } else {
+      setLogoClicks(nextClicks);
+      setTimeout(() => setLogoClicks(0), 3000); // 3秒内不连续点击则重置
+    }
+  };
+
   const handleSaveInsight = async (data: Partial<MarketInsight>) => {
     if (!sql) return;
     const id = editingInsight?.id || crypto.randomUUID();
     const finalData = { ...data, id, updatedAt: Date.now() };
-    
     try {
       if (editingInsight) {
         await sql`UPDATE insights SET symbol=${finalData.symbol}, category=${finalData.category}, status=${finalData.status}, focus_points=${finalData.focusPoints}, strategy=${finalData.strategy}, entry_level=${finalData.entryLevel}, updated_at=${finalData.updatedAt}, completion_status=${finalData.completionStatus} WHERE id=${id}`;
@@ -100,7 +121,6 @@ const App: React.FC = () => {
     if (!sql) return;
     const id = editingJournal?.id || crypto.randomUUID();
     const finalData = { ...data, id };
-    
     try {
       if (editingJournal) {
         await sql`UPDATE journals SET title=${finalData.title}, content=${finalData.content}, mood=${finalData.mood}, type=${finalData.type}, source=${finalData.source}, date=${finalData.date} WHERE id=${id}`;
@@ -122,10 +142,8 @@ const App: React.FC = () => {
     if (!sql) return;
     const id = editingPosition?.id || crypto.randomUUID();
     const finalData = { ...data, id, updatedAt: Date.now() };
-    
     try {
       if (editingPosition) {
-        // Correcting property names from snake_case to camelCase to match PositionEntry type used in finalData
         await sql`UPDATE positions SET symbol=${finalData.symbol}, category=${finalData.category}, signal_type=${finalData.signalType}, side=${finalData.side}, status=${finalData.status}, signal_time=${finalData.signalTime}, entry_price=${finalData.entryPrice}, invested_amount=${finalData.investedAmount}, yield_rate=${finalData.yieldRate}, yield_amount=${finalData.yieldAmount}, updated_at=${finalData.updatedAt} WHERE id=${id}`;
       } else {
         await sql`INSERT INTO positions (id, symbol, category, signal_type, side, status, signal_time, entry_price, invested_amount, yield_rate, yield_amount, updated_at) VALUES (${id}, ${finalData.symbol}, ${finalData.category}, ${finalData.signalType}, ${finalData.side}, ${finalData.status}, ${finalData.signalTime}, ${finalData.entryPrice}, ${finalData.investedAmount}, ${finalData.yieldRate}, ${finalData.yieldAmount}, ${finalData.updatedAt})`;
@@ -141,27 +159,6 @@ const App: React.FC = () => {
     fetchData();
   };
 
-  const handleToggleAdmin = () => {
-    if (!isAdmin) {
-      const password = prompt("请输入管理密码开启编辑模式:");
-      if (password === ADMIN_PASSWORD) {
-        setIsAdmin(true);
-        localStorage.setItem('is_admin', 'true');
-      }
-    } else {
-      setIsAdmin(false);
-      localStorage.removeItem('is_admin');
-    }
-  };
-
-  const handleChangeWallpaper = () => {
-    const url = prompt("请输入背景图片的 URL 地址 (留空恢复默认):", bgImage === DEFAULT_BG ? '' : bgImage);
-    if (url === null) return;
-    const finalUrl = url.trim() || DEFAULT_BG;
-    setBgImage(finalUrl);
-    localStorage.setItem('app_wallpaper', finalUrl);
-  };
-
   const handleOpenAddForm = () => {
     if (sortMode === 'category') { setEditingInsight(undefined); setShowInsightForm(true); }
     else if (sortMode === 'journal') { setEditingJournal(undefined); setShowJournalForm(true); }
@@ -175,12 +172,15 @@ const App: React.FC = () => {
 
       <header className="fixed top-8 left-1/2 -translate-x-1/2 z-[100] w-[94%] max-w-6xl">
         <div className="stadium-nav px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center text-white shadow-lg">
+          <button 
+            onClick={handleLogoClick}
+            className="flex items-center gap-4 group active:scale-95 transition-all"
+          >
+            <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center text-white shadow-lg group-hover:bg-amber-600 transition-colors">
               <TrendingUp className="w-5 h-5" />
             </div>
             <h1 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tighter">Market Weekly</h1>
-          </div>
+          </button>
 
           <nav className="flex items-center gap-1.5 bg-black/5 dark:bg-white/5 p-1 rounded-full">
             {[
@@ -199,14 +199,8 @@ const App: React.FC = () => {
           </nav>
 
           <div className="flex items-center gap-3">
-             <button onClick={handleChangeWallpaper} className="p-2.5 text-gray-400 hover:text-amber-500 transition-colors" title="更换壁纸">
-               <ImageIcon className="w-4.5 h-4.5" />
-             </button>
              <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2.5 text-gray-400 hover:text-amber-500 transition-colors">
                {isDarkMode ? <Sun className="w-4.5 h-4.5" /> : <Moon className="w-4.5 h-4.5" />}
-             </button>
-             <button onClick={handleToggleAdmin} className={`p-2.5 rounded-full transition-all ${isAdmin ? 'text-amber-500 shadow-inner bg-black/5' : 'text-gray-400 hover:text-gray-900'}`}>
-               <Settings className="w-4.5 h-4.5" />
              </button>
           </div>
         </div>
@@ -234,10 +228,10 @@ const App: React.FC = () => {
                 {isAdmin && (
                   <button 
                     onClick={handleOpenAddForm}
-                    className="bg-white/10 border-4 border-dashed border-white/20 rounded-[3rem] h-full min-h-[460px] flex flex-col items-center justify-center group hover:border-amber-500/40 transition-all backdrop-blur-sm"
+                    className="bg-white/5 border-4 border-dashed border-white/10 rounded-[3rem] h-full min-h-[460px] flex flex-col items-center justify-center group hover:border-amber-500/40 transition-all backdrop-blur-sm"
                   >
-                    <Plus className="w-10 h-10 text-white/30 group-hover:text-white transition-all" />
-                    <span className="text-sm font-black text-white/30 mt-4 group-hover:text-white uppercase tracking-widest">New Probe</span>
+                    <Plus className="w-10 h-10 text-white/20 group-hover:text-white transition-all" />
+                    <span className="text-sm font-black text-white/20 mt-4 group-hover:text-white uppercase tracking-widest">New Probe</span>
                   </button>
                 )}
               </div>

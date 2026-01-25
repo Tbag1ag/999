@@ -52,20 +52,12 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
   const stats = useMemo(() => {
     const closedPositions = positions.filter(p => p.status === '已平仓');
     const openPositions = positions.filter(p => p.status === '持仓中');
-    
     const totalProfit = closedPositions.reduce((sum, p) => sum + (p.yieldAmount || 0), 0);
     const totalEquity = INITIAL_CAPITAL + totalProfit;
-    
     const investedInOpen = openPositions.reduce((sum, p) => sum + (p.investedAmount || 0), 0);
     const cash = totalEquity - investedInOpen;
     const cashPercent = totalEquity > 0 ? (cash / totalEquity) * 100 : 100;
-    
-    return {
-      totalEquity,
-      cash,
-      cashPercent,
-      maxDrawdown: 0.00
-    };
+    return { totalEquity, cash, cashPercent, maxDrawdown: 0.00 };
   }, [positions]);
 
   const tabs: (PositionSignalType | '全部')[] = ['全部', 'Short Term', 'Medium Term', 'Long Term'];
@@ -76,7 +68,6 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
       const matchesSearch = p.symbol.toLowerCase().includes(search.toLowerCase());
       return matchesTab && matchesSearch;
     });
-
     if (sortConfig !== null) {
       filtered.sort((a, b) => {
         const aValue = a[sortConfig.key];
@@ -86,7 +77,6 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
         return 0;
       });
     }
-
     return filtered;
   }, [positions, activeTab, search, sortConfig]);
 
@@ -105,35 +95,33 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
     <div className="w-full max-w-[1400px] mx-auto space-y-8 animate-in fade-in duration-700">
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-        {/* Portfolio Stats Card */}
-        <div className="bg-glass rounded-[2.5rem] p-8 sm:p-10 shadow-sm">
+        <div className="bg-glass rounded-[2.5rem] p-8 sm:p-10">
            <div className="flex justify-between items-baseline mb-10">
-              <h3 className="text-4xl font-black text-[#12141c] dark:text-white tracking-tighter italic">Portfolio</h3>
+              <h3 className="text-4xl font-black text-[#000000] dark:text-white tracking-tighter italic">Portfolio</h3>
            </div>
            <div className="grid grid-cols-2 gap-y-10">
               <div>
-                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">总资产 <Info className="w-3 h-3" /></div>
-                <div className="text-3xl font-black text-[#12141c] dark:text-white">${stats.totalEquity.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
+                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">总资产</div>
+                <div className="text-3xl font-black text-[#000000] dark:text-white">${stats.totalEquity.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
               </div>
               <div>
-                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">现金 <Info className="w-3 h-3" /></div>
-                <div className="text-3xl font-black text-[#12141c] dark:text-white">${stats.cash.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
+                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">现金</div>
+                <div className="text-3xl font-black text-[#000000] dark:text-white">${stats.cash.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
               </div>
               <div>
-                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">现金占比 <Info className="w-3 h-3" /></div>
-                <div className="text-3xl font-black text-[#12141c] dark:text-white">{stats.cashPercent.toFixed(1)}%</div>
+                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">现金占比</div>
+                <div className="text-3xl font-black text-[#000000] dark:text-white">{stats.cashPercent.toFixed(1)}%</div>
               </div>
               <div>
-                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">最大回撤 <Info className="w-3 h-3" /></div>
-                <div className="text-3xl font-black text-[#12141c] dark:text-white">{stats.maxDrawdown.toFixed(1)}%</div>
+                <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">最大回撤</div>
+                <div className="text-3xl font-black text-[#000000] dark:text-white">{stats.maxDrawdown.toFixed(1)}%</div>
               </div>
            </div>
         </div>
 
-        {/* P&L Stats Card */}
-        <div className="bg-glass rounded-[2.5rem] p-8 sm:p-10 shadow-sm flex flex-col">
+        <div className="bg-glass rounded-[2.5rem] p-8 sm:p-10 flex flex-col">
            <div className="flex justify-between items-baseline mb-10">
-              <h3 className="text-4xl font-black text-[#12141c] dark:text-white tracking-tighter italic">P&L</h3>
+              <h3 className="text-4xl font-black text-[#000000] dark:text-white tracking-tighter italic">P&L</h3>
            </div>
            <div className="grid grid-cols-2 gap-y-10">
               <div>
@@ -156,8 +144,7 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
         </div>
       </div>
 
-      {/* Main Table Container */}
-      <div className="bg-glass rounded-[2.5rem] shadow-sm overflow-hidden">
+      <div className="bg-glass rounded-[2.5rem] overflow-hidden">
         <div className="px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex bg-black/5 dark:bg-white/10 p-1 rounded-2xl gap-1">
             {tabs.map(tab => (
@@ -166,7 +153,7 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
                 onClick={() => setActiveTab(tab)}
                 className={`px-6 py-2 rounded-xl text-[12px] font-black transition-all ${
                   activeTab === tab 
-                  ? 'bg-[#12141c] dark:bg-amber-500 text-white shadow-xl' 
+                  ? 'bg-market-dark text-white shadow-xl dark:bg-amber-500' 
                   : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
                 }`}
               >
@@ -209,7 +196,7 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
                 <th className="px-4 py-5 text-center">入场价</th>
                 <th className="px-4 py-5 text-center">收益率</th>
                 <th className="px-4 py-5 text-center">收益额</th>
-                <th className="px-4 py-5 text-center">记录时间</th>
+                <th className="px-4 py-5 text-center text-[#000000] dark:text-white">记录时间</th>
                 {isAdmin && <th className="px-8 py-5 text-right">管理</th>}
               </tr>
             </thead>
@@ -217,7 +204,7 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
               {processedPositions.map((pos) => (
                 <tr key={pos.id} className="group hover:bg-white/10 transition-colors">
                   <td className="px-8 py-5">
-                    <div className="text-[15px] font-black text-[#12141c] dark:text-white">{pos.symbol}</div>
+                    <div className="text-[15px] font-black text-[#000000] dark:text-white">{pos.symbol}</div>
                   </td>
                   <td className="px-4 py-5 text-center">
                     <span className="text-[12px] font-black text-gray-500 dark:text-gray-400 bg-black/5 px-2.5 py-1 rounded-lg">{pos.category}</span>
@@ -228,8 +215,8 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
                   <td className="px-4 py-5 text-center">
                     <span className={`text-[14px] font-black ${pos.side === 'Buy' ? 'text-emerald-500' : 'text-red-500'}`}>{pos.side === 'Buy' ? '买入' : '卖出'}</span>
                   </td>
-                  <td className="px-4 py-5 text-center text-[13px] font-black text-gray-500">{translateSignalType(pos.signalType)}</td>
-                  <td className="px-4 py-5 text-center text-[14px] font-black text-[#12141c] dark:text-white">{pos.entryPrice || '/'}</td>
+                  <td className="px-4 py-5 text-center text-[13px] font-black text-gray-600 dark:text-gray-400">{translateSignalType(pos.signalType)}</td>
+                  <td className="px-4 py-5 text-center text-[14px] font-black text-[#000000] dark:text-white">{pos.entryPrice || '/'}</td>
                   <td className="px-4 py-5 text-center">
                     <div className={`text-[14px] font-black ${pos.yieldRate >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
                        {pos.yieldRate >= 0 ? '+' : ''}{pos.yieldRate}%
@@ -241,7 +228,7 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
                     </div>
                   </td>
                   <td className="px-4 py-5 text-center">
-                    <div className="flex items-center justify-center gap-2 text-[12px] text-gray-400 font-black">
+                    <div className="flex items-center justify-center gap-2 text-[12px] text-[#000000] dark:text-white/80 font-black">
                       <Calendar className="w-3 h-3" />
                       {new Date(pos.updatedAt).toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' })}
                     </div>

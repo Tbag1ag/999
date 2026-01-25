@@ -13,10 +13,6 @@
           extend: {
             colors: {
               'market-dark': '#12141c',
-            },
-            borderRadius: {
-              '4xl': '2rem',
-              '5xl': '3rem',
             }
           }
         }
@@ -60,39 +56,37 @@
         pointer-events: none;
       }
 
-      /* 极致通透的奶油磨砂质感 - 参考用户参考图 */
+      /* 极致通透闪卡质感 - 80px 模糊，无白边 */
       .bg-glass {
-        background: rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.07);
         backdrop-filter: blur(80px) saturate(180%);
         -webkit-backdrop-filter: blur(80px) saturate(180%);
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        box-shadow: 
-          0 20px 50px -10px rgba(0, 0, 0, 0.1),
-          inset 0 0 20px rgba(255, 255, 255, 0.05);
+        border: none !important;
+        box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.12);
       }
 
       .dark .bg-glass {
-        background: rgba(20, 25, 35, 0.45);
-        border: 1px solid rgba(255, 255, 255, 0.04);
+        background: rgba(18, 22, 28, 0.4);
+        border: none !important;
         box-shadow: 0 40px 100px -30px rgba(0, 0, 0, 0.4);
       }
 
-      /* 参考图中底部的深色块质感 */
       .dark-glass {
-        background: rgba(18, 20, 28, 0.65);
+        background: rgba(0, 0, 0, 0.25);
         backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        border: none !important;
       }
 
       .stadium-nav {
         border-radius: 999px;
-        background: rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.12);
         backdrop-filter: blur(40px) saturate(150%);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        border: none !important;
+        box-shadow: 0 15px 50px -10px rgba(0, 0, 0, 0.05);
       }
       
       .dark .stadium-nav {
-        background: rgba(30, 35, 45, 0.5);
+        background: rgba(30, 35, 45, 0.4);
       }
 
       ::-webkit-scrollbar { width: 0px; }

@@ -13,6 +13,10 @@
           extend: {
             colors: {
               'market-dark': '#12141c',
+            },
+            borderRadius: {
+              '4xl': '2rem',
+              '5xl': '3rem',
             }
           }
         }
@@ -33,7 +37,6 @@
         overflow-x: hidden;
       }
 
-      /* 沉浸式背景层 */
       .app-bg {
         position: fixed;
         top: 0;
@@ -53,49 +56,43 @@
         width: 100vw;
         height: 100vh;
         z-index: -1;
-        background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.15) 100%);
+        background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.1) 100%);
         pointer-events: none;
       }
 
-      /* 极致通透的玻璃拟态 - 参考用户提供的图片质感 */
+      /* 极致通透的奶油磨砂质感 - 参考用户参考图 */
       .bg-glass {
-        background: rgba(255, 255, 255, 0.08); /* 极致低透明度 */
-        backdrop-filter: blur(60px) saturate(210%); /* 强模糊 + 高饱和度 */
-        -webkit-backdrop-filter: blur(60px) saturate(210%);
-        border: 1px solid rgba(255, 255, 255, 0.03); /* 近乎不可见的边缘线 */
-        box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.12), 
-                    inset 0 0 0 1px rgba(255, 255, 255, 0.05); /* 内发光提升层次 */
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(80px) saturate(180%);
+        -webkit-backdrop-filter: blur(80px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        box-shadow: 
+          0 20px 50px -10px rgba(0, 0, 0, 0.1),
+          inset 0 0 20px rgba(255, 255, 255, 0.05);
       }
 
       .dark .bg-glass {
-        background: rgba(10, 15, 25, 0.35); /* 暗色模式保持深邃通透 */
-        border: 1px solid rgba(255, 255, 255, 0.01);
-        box-shadow: 0 40px 100px -30px rgba(0, 0, 0, 0.5);
+        background: rgba(20, 25, 35, 0.45);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        box-shadow: 0 40px 100px -30px rgba(0, 0, 0, 0.4);
       }
 
-      /* 导航条同样采用超通透设计 */
+      /* 参考图中底部的深色块质感 */
+      .dark-glass {
+        background: rgba(18, 20, 28, 0.65);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
       .stadium-nav {
         border-radius: 999px;
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(40px) saturate(160%);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.15);
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(40px) saturate(150%);
+        border: 1px solid rgba(255, 255, 255, 0.1);
       }
       
       .dark .stadium-nav {
-        background: rgba(30, 35, 45, 0.4);
-        border: 1px solid rgba(255, 255, 255, 0.02);
-      }
-
-      .strategy-box {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(15px);
-        border: 1px solid rgba(255, 255, 255, 0.03);
-      }
-
-      .dark .strategy-box {
-        background: rgba(0, 0, 0, 0.15);
-        border: 1px solid rgba(255, 255, 255, 0.01);
+        background: rgba(30, 35, 45, 0.5);
       }
 
       ::-webkit-scrollbar { width: 0px; }

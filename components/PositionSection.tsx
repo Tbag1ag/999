@@ -14,9 +14,9 @@ const INITIAL_CAPITAL = 20000;
 
 const getStatusStyle = (status: PositionStatus) => {
   switch (status) {
-    case '持仓中': return 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-black';
-    case '观察中': return 'bg-amber-500/15 text-amber-600 dark:text-amber-400 font-black';
-    case '已平仓': return 'bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 font-black';
+    case '持仓中': return 'bg-emerald-500 text-white font-black';
+    case '观察中': return 'bg-amber-500 text-white font-black';
+    case '已平仓': return 'bg-white dark:bg-white/20 text-black dark:text-white font-black';
     default: return 'bg-gray-100 dark:bg-white/10 text-gray-400 font-black';
   }
 };
@@ -90,7 +90,6 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
 
   return (
     <div className="w-full max-w-6xl mx-auto space-y-6 sm:space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
-      {/* Portfolio Stats Bar - Optimized for Mobile Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 px-4 sm:px-0">
         {[
           { label: '总资产 (Equity)', value: `$${stats.totalEquity.toLocaleString()}` },
@@ -98,39 +97,37 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
           { label: '可用现金 %', value: `${stats.cashPercent.toFixed(1)}%` },
           { label: '总收益率 (ROI)', value: `${stats.totalReturnRate > 0 ? '+' : ''}${stats.totalReturnRate.toFixed(2)}%`, highlight: true }
         ].map((item, i) => (
-          <div key={i} className="bg-glass p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] border border-white/5 flex flex-col justify-center">
-            <p className="text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 sm:mb-2">{item.label}</p>
-            <p className={`text-lg sm:text-2xl font-black truncate ${item.highlight ? (stats.totalReturnRate >= 0 ? 'text-emerald-500' : 'text-red-500') : 'text-[#12141c] dark:text-white'}`}>
+          <div key={i} className="bg-glass p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[2.5rem] border border-white/10 flex flex-col justify-center">
+            <p className="text-[9px] sm:text-[11px] font-[900] text-black/50 dark:text-white/50 uppercase tracking-[0.2em] mb-1 sm:mb-2">{item.label}</p>
+            <p className={`text-xl sm:text-4xl font-[900] truncate ${item.highlight ? (stats.totalReturnRate >= 0 ? 'text-emerald-500' : 'text-red-500') : 'text-black dark:text-white'}`}>
               {item.value}
             </p>
           </div>
         ))}
       </div>
 
-      {/* Positions Container */}
-      <div className="bg-glass sm:rounded-[2.5rem] rounded-[1.5rem] border border-white/10 overflow-hidden shadow-2xl mx-4 sm:mx-0">
-        <div className="p-5 sm:p-8 border-b border-black/5 dark:border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6">
-          <div className="flex bg-black/5 dark:bg-white/5 p-1 rounded-full overflow-hidden w-full sm:w-auto">
+      <div className="bg-glass sm:rounded-[3rem] rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl mx-4 sm:mx-0">
+        <div className="p-6 sm:p-10 border-b border-black/5 dark:border-white/5 flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="flex bg-black/5 dark:bg-black/40 p-1.5 rounded-full overflow-hidden w-full sm:w-auto stadium-nav">
             {tabs.map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 rounded-full text-[10px] sm:text-[11px] font-black transition-all ${activeTab === tab ? 'bg-white dark:bg-amber-500 text-black dark:text-white shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                className={`flex-1 sm:flex-none px-6 sm:px-8 py-3 rounded-full text-[11px] sm:text-[13px] font-black transition-all ${activeTab === tab ? 'bg-white dark:bg-amber-500 text-black dark:text-white shadow-xl' : 'text-gray-400 hover:text-gray-900 dark:hover:text-white/80'}`}
               >
                 {translateSignalType(tab)}
               </button>
             ))}
           </div>
-          <button className="hidden sm:flex items-center gap-2 px-5 py-2 bg-black/5 dark:bg-white/5 rounded-xl text-[11px] font-black text-gray-500 hover:text-black dark:hover:text-white transition-all uppercase tracking-widest">
-            <Download className="w-3.5 h-3.5" /> 导出报告
+          <button className="hidden sm:flex items-center gap-2 px-6 py-3 bg-black/5 dark:bg-white/10 rounded-2xl text-[11px] font-black text-gray-500 dark:text-white/60 hover:text-black dark:hover:text-white transition-all uppercase tracking-widest">
+            <Download className="w-4 h-4" /> 导出报告
           </button>
         </div>
 
-        {/* Desktop Table */}
         <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-black/5 dark:border-white/5">
+              <tr className="border-b border-black/10 dark:border-white/10">
                 {[
                   { key: 'symbol', label: '标的' },
                   { key: 'status', label: '状态' },
@@ -143,54 +140,54 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
                   <th
                     key={col.key}
                     onClick={() => requestSort(col.key as SortKey)}
-                    className="px-8 py-6 group/th cursor-pointer hover:bg-black/2 transition-colors"
+                    className="px-8 py-8 group/th cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
                   >
-                    <div className="flex items-center text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                    <div className="flex items-center text-[10px] sm:text-[11px] font-black text-black/60 dark:text-white/60 uppercase tracking-[0.2em]">
                       {col.label}
                       <SortArrows columnKey={col.key as SortKey} />
                     </div>
                   </th>
                 ))}
-                {isAdmin && <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">操作</th>}
+                {isAdmin && <th className="px-8 py-8 text-[11px] font-black text-black/60 dark:text-white/60 uppercase tracking-widest text-right">操作</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-black/5 dark:divide-white/5">
               {processedPositions.map((pos) => (
-                <tr key={pos.id} className="group/tr hover:bg-black/2 dark:hover:bg-white/2 transition-colors">
-                  <td className="px-8 py-6">
+                <tr key={pos.id} className="group/tr hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                  <td className="px-8 py-8">
                     <div className="flex flex-col">
-                      <span className="text-sm font-black text-[#12141c] dark:text-white uppercase tracking-tight">{pos.symbol}</span>
-                      <span className="text-[10px] font-bold text-gray-400">{pos.category} / {pos.side}</span>
+                      <span className="text-lg font-[900] text-black dark:text-white uppercase tracking-tighter">{pos.symbol}</span>
+                      <span className="text-[10px] font-black text-black/40 dark:text-white/40 uppercase tracking-widest">{pos.category} / {pos.side}</span>
                     </div>
                   </td>
-                  <td className="px-8 py-6">
-                    <span className={`px-3 py-1 rounded-lg text-[10px] ${getStatusStyle(pos.status)}`}>
+                  <td className="px-8 py-8">
+                    <span className={`px-3 py-1.5 rounded-xl text-[10px] ${getStatusStyle(pos.status)} shadow-sm`}>
                       {pos.status}
                     </span>
                   </td>
-                  <td className="px-8 py-6">
-                    <span className="text-[11px] font-black text-gray-500">{translateSignalType(pos.signalType)}</span>
+                  <td className="px-8 py-8">
+                    <span className="text-[12px] font-black text-black dark:text-white/80">{translateSignalType(pos.signalType)}</span>
                   </td>
-                  <td className="px-8 py-6 font-bold text-sm text-gray-600 dark:text-gray-300">
+                  <td className="px-8 py-8 font-black text-[15px] text-black dark:text-white/90">
                     {pos.investedAmount?.toLocaleString() || '0'}
                   </td>
-                  <td className="px-8 py-6 font-bold text-sm text-gray-600 dark:text-gray-300">
+                  <td className="px-8 py-8 font-black text-[15px] text-black dark:text-white/90">
                     {pos.entryPrice || '/'}
                   </td>
-                  <td className={`px-8 py-6 font-black text-sm ${pos.yieldRate > 0 ? 'text-emerald-500' : pos.yieldRate < 0 ? 'text-red-500' : 'text-gray-400'}`}>
+                  <td className={`px-8 py-8 font-[900] text-lg ${pos.yieldRate > 0 ? 'text-emerald-500' : pos.yieldRate < 0 ? 'text-red-500' : 'text-gray-400'}`}>
                     {pos.yieldRate > 0 ? '+' : ''}{pos.yieldRate?.toFixed(2)}%
                   </td>
-                  <td className={`px-8 py-6 font-black text-sm ${pos.yieldAmount > 0 ? 'text-emerald-500' : pos.yieldAmount < 0 ? 'text-red-500' : 'text-gray-400'}`}>
+                  <td className={`px-8 py-8 font-[900] text-lg ${pos.yieldAmount > 0 ? 'text-emerald-500' : pos.yieldAmount < 0 ? 'text-red-500' : 'text-gray-400'}`}>
                     {pos.yieldAmount > 0 ? '+' : ''}{pos.yieldAmount?.toLocaleString() || '0'}
                   </td>
                   {isAdmin && (
-                    <td className="px-8 py-6 text-right">
+                    <td className="px-8 py-8 text-right">
                       <div className="flex items-center justify-end gap-2 opacity-0 group-hover/tr:opacity-100 transition-opacity">
-                        <button onClick={() => onEdit(pos)} className="p-2 bg-black/5 dark:bg-white/5 hover:bg-amber-500 hover:text-white rounded-lg transition-all">
-                          <Edit2 className="w-3.5 h-3.5" />
+                        <button onClick={() => onEdit(pos)} className="p-2.5 bg-black/5 dark:bg-white/10 hover:bg-amber-500 hover:text-white rounded-xl transition-all shadow-sm">
+                          <Edit2 className="w-4 h-4" />
                         </button>
-                        <button onClick={() => onDelete(pos.id)} className="p-2 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all">
-                          <Trash2 className="w-3.5 h-3.5" />
+                        <button onClick={() => onDelete(pos.id)} className="p-2.5 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all shadow-sm">
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </td>
@@ -201,37 +198,36 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
           </table>
         </div>
 
-        {/* Mobile View - Responsive Card List */}
         <div className="sm:hidden divide-y divide-black/5 dark:divide-white/5">
           {processedPositions.map((pos) => (
-            <div key={pos.id} className="p-5 space-y-4" onClick={() => isAdmin && onEdit(pos)}>
+            <div key={pos.id} className="p-6 space-y-5" onClick={() => isAdmin && onEdit(pos)}>
               <div className="flex items-start justify-between">
                 <div>
-                  <h4 className="text-lg font-black text-[#12141c] dark:text-white uppercase tracking-tight leading-none">{pos.symbol}</h4>
-                  <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">{pos.category} · {pos.side === 'Buy' ? '多' : '空'}</p>
+                  <h4 className="text-2xl font-[900] text-black dark:text-white uppercase tracking-tighter leading-none">{pos.symbol}</h4>
+                  <p className="text-[10px] font-black text-black/40 dark:text-white/40 mt-1.5 uppercase tracking-widest">{pos.category} · {pos.side === 'Buy' ? '多' : '空'}</p>
                 </div>
                 <div className="flex flex-col items-end gap-2">
-                  <span className={`px-2 py-0.5 rounded-lg text-[9px] ${getStatusStyle(pos.status)}`}>
+                  <span className={`px-3 py-1 rounded-xl text-[10px] ${getStatusStyle(pos.status)}`}>
                     {pos.status}
                   </span>
-                  <span className="text-[9px] font-black text-gray-400 uppercase">{translateSignalType(pos.signalType)}</span>
+                  <span className="text-[10px] font-[900] text-black/50 dark:text-white/50 uppercase tracking-widest">{translateSignalType(pos.signalType)}</span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-2 bg-black/5 dark:bg-black/20 p-5 rounded-[1.5rem]">
                  <div className="flex flex-col">
-                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">本金</span>
-                    <span className="text-xs font-bold dark:text-gray-200">${pos.investedAmount?.toLocaleString()}</span>
+                    <span className="text-[9px] font-black text-black/40 dark:text-white/40 uppercase tracking-widest mb-1">本金</span>
+                    <span className="text-sm font-black text-black dark:text-white">${pos.investedAmount?.toLocaleString()}</span>
                  </div>
                  <div className="flex flex-col">
-                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">收益 %</span>
-                    <span className={`text-xs font-black ${pos.yieldRate > 0 ? 'text-emerald-500' : pos.yieldRate < 0 ? 'text-red-500' : 'text-gray-400'}`}>
+                    <span className="text-[9px] font-black text-black/40 dark:text-white/40 uppercase tracking-widest mb-1">收益 %</span>
+                    <span className={`text-sm font-[900] ${pos.yieldRate > 0 ? 'text-emerald-500' : pos.yieldRate < 0 ? 'text-red-500' : 'text-gray-400'}`}>
                        {pos.yieldRate > 0 ? '+' : ''}{pos.yieldRate?.toFixed(2)}%
                     </span>
                  </div>
                  <div className="flex flex-col items-end">
-                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">盈亏 $</span>
-                    <span className={`text-xs font-black ${pos.yieldAmount > 0 ? 'text-emerald-500' : pos.yieldAmount < 0 ? 'text-red-500' : 'text-gray-400'}`}>
+                    <span className="text-[9px] font-black text-black/40 dark:text-white/40 uppercase tracking-widest mb-1">盈亏 $</span>
+                    <span className={`text-sm font-[900] ${pos.yieldAmount > 0 ? 'text-emerald-500' : pos.yieldAmount < 0 ? 'text-red-500' : 'text-gray-400'}`}>
                        {pos.yieldAmount > 0 ? '+' : ''}{pos.yieldAmount?.toLocaleString()}
                     </span>
                  </div>
@@ -241,9 +237,9 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
                 <div className="flex justify-end gap-3 pt-2">
                   <button 
                     onClick={(e) => { e.stopPropagation(); onDelete(pos.id); }} 
-                    className="p-2 bg-red-500/10 text-red-500 rounded-xl"
+                    className="px-6 py-2.5 bg-red-500/10 text-red-500 rounded-xl font-black text-[10px] uppercase"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    DELETE
                   </button>
                 </div>
               )}
@@ -252,7 +248,7 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
         </div>
 
         {processedPositions.length === 0 && (
-          <div className="py-20 text-center text-gray-300 dark:text-white/10 italic font-black text-xl">
+          <div className="py-32 text-center opacity-10 italic font-black text-3xl text-black dark:text-white tracking-tighter">
             No active positions recorded
           </div>
         )}

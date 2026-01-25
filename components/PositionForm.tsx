@@ -22,7 +22,7 @@ const PositionForm: React.FC<PositionFormProps> = ({ initialData, onSave, onCanc
       shares: 1,
       yieldRate: 0,
       yieldAmount: 0,
-      updatedAt: Date.now()
+      signalTime: Date.now()
     }
   );
 
@@ -62,9 +62,10 @@ const PositionForm: React.FC<PositionFormProps> = ({ initialData, onSave, onCanc
                 <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
                 <input
                   type="date"
+                  required
                   className="w-full bg-gray-50 dark:bg-white/5 border-2 border-transparent focus:border-amber-400 p-4 pl-12 rounded-2xl outline-none text-[14px] font-black dark:text-white transition-all"
-                  value={formatDateForInput(formData.updatedAt)}
-                  onChange={e => setFormData({...formData, updatedAt: new Date(e.target.value).getTime()})}
+                  value={formatDateForInput(formData.signalTime)}
+                  onChange={e => setFormData({...formData, signalTime: new Date(e.target.value).getTime()})}
                 />
               </div>
             </div>
@@ -131,11 +132,12 @@ const PositionForm: React.FC<PositionFormProps> = ({ initialData, onSave, onCanc
 
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">持股数量 (Shares)</label>
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">持股数量 (SHARES)</label>
               <input 
                 type="number" 
-                min="1"
-                step="1"
+                required
+                min="0.00000001"
+                step="any"
                 className="w-full bg-gray-50 dark:bg-white/5 border-2 border-transparent focus:border-amber-400 p-4 rounded-2xl outline-none text-[15px] font-black dark:text-white transition-all" 
                 value={formData.shares || ''} 
                 onChange={e => setFormData({...formData, shares: parseFloat(e.target.value) || 0})} 
@@ -145,6 +147,7 @@ const PositionForm: React.FC<PositionFormProps> = ({ initialData, onSave, onCanc
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">入场价格</label>
               <input 
                 type="number" 
+                required
                 step="any" 
                 className="w-full bg-gray-50 dark:bg-white/5 border-2 border-transparent focus:border-amber-400 p-4 rounded-2xl outline-none text-[15px] font-black dark:text-white transition-all placeholder:text-gray-300" 
                 placeholder={formData.status === '观察中' ? '/' : '0.00'}
@@ -178,7 +181,10 @@ const PositionForm: React.FC<PositionFormProps> = ({ initialData, onSave, onCanc
 
           <div className="pt-4 flex gap-3">
             <button type="button" onClick={onCancel} className="flex-1 py-4 rounded-2xl border border-gray-100 dark:border-white/5 text-gray-400 font-black text-[13px] hover:bg-gray-50 transition-colors">取消</button>
-            <button type="submit" className="flex-[2] py-4 rounded-2xl bg-[#12141c] dark:bg-amber-500 text-white font-black text-[13px] flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95 transition-all shadow-xl">
+            <button 
+              type="submit" 
+              className="flex-[2] py-4 rounded-2xl bg-market-dark dark:bg-amber-500 text-white font-black text-[13px] flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95 transition-all shadow-[0_15px_30px_-5px_rgba(18,20,28,0.3)] ring-1 ring-white/10"
+            >
               <Save className="w-4 h-4" /> 记录并同步资产
             </button>
           </div>

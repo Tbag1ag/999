@@ -111,13 +111,13 @@ const JournalSection: React.FC<JournalSectionProps> = ({ entries, isAdmin, onEdi
                     </div>
                   </div>
 
-                  {/* 展开内容区 - 核心滚动逻辑 */}
+                  {/* 展开内容区 - 移除 max-height 限制和滚动 */}
                   <div 
-                    className={`transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isExpanded ? 'max-h-[2500px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}
+                    className={`transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isExpanded ? 'max-h-[10000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}
                   >
                     <div className="px-8 sm:px-12 pb-10 pt-2 border-t border-black/5 dark:border-white/5">
-                      {/* 内容容器：设置最大高度和滚动 */}
-                      <div className="strategy-box p-8 mb-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                      {/* 内容容器：移除最大高度和滚动，直接完全撑开 */}
+                      <div className="strategy-box p-8 mb-8">
                         <p className="text-[15px] sm:text-[18px] text-black dark:text-white leading-loose font-bold whitespace-pre-wrap tracking-tight">
                           {entry.content}
                         </p>
@@ -160,26 +160,6 @@ const JournalSection: React.FC<JournalSectionProps> = ({ entries, isAdmin, onEdi
           })
         )}
       </div>
-      
-      {/* 局部滚动条美化 */}
-      <style>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(0,0,0,0.1);
-          border-radius: 10px;
-        }
-        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(255,255,255,0.1);
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(245, 158, 11, 0.4);
-        }
-      `}</style>
     </div>
   );
 };

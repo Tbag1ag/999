@@ -56,33 +56,38 @@
         pointer-events: none;
       }
 
-      /* 极致通透闪卡质感 - 80px 模糊，无白边 */
+      /* 外层：奶油磨砂闪卡质感 */
       .bg-glass {
-        background: rgba(255, 255, 255, 0.07);
+        background: rgba(255, 255, 255, 0.12);
         backdrop-filter: blur(80px) saturate(180%);
         -webkit-backdrop-filter: blur(80px) saturate(180%);
         border: none !important;
-        box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.12);
+        box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.1);
       }
 
       .dark .bg-glass {
-        background: rgba(18, 22, 28, 0.4);
+        background: rgba(22, 26, 34, 0.45);
         border: none !important;
         box-shadow: 0 40px 100px -30px rgba(0, 0, 0, 0.4);
       }
 
-      .dark-glass {
-        background: rgba(0, 0, 0, 0.25);
+      /* 内层：更高不透明度的策略盒子 */
+      .strategy-box {
+        background: rgba(255, 255, 255, 0.55);
         backdrop-filter: blur(20px);
-        border: none !important;
+        border-radius: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+      }
+
+      .dark .strategy-box {
+        background: rgba(255, 255, 255, 0.1);
       }
 
       .stadium-nav {
         border-radius: 999px;
-        background: rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.15);
         backdrop-filter: blur(40px) saturate(150%);
         border: none !important;
-        box-shadow: 0 15px 50px -10px rgba(0, 0, 0, 0.05);
       }
       
       .dark .stadium-nav {

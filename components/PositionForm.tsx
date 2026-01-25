@@ -19,7 +19,7 @@ const PositionForm: React.FC<PositionFormProps> = ({ initialData, onSave, onCanc
       side: 'Buy',
       status: '观察中',
       entryPrice: 0,
-      investedAmount: 0,
+      shares: 1,
       yieldRate: 0,
       yieldAmount: 0,
       updatedAt: Date.now()
@@ -131,12 +131,14 @@ const PositionForm: React.FC<PositionFormProps> = ({ initialData, onSave, onCanc
 
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">投入本金 ($)</label>
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">持股数量 (Shares)</label>
               <input 
                 type="number" 
+                min="1"
+                step="1"
                 className="w-full bg-gray-50 dark:bg-white/5 border-2 border-transparent focus:border-amber-400 p-4 rounded-2xl outline-none text-[15px] font-black dark:text-white transition-all" 
-                value={formData.investedAmount || ''} 
-                onChange={e => setFormData({...formData, investedAmount: parseFloat(e.target.value) || 0})} 
+                value={formData.shares || ''} 
+                onChange={e => setFormData({...formData, shares: parseFloat(e.target.value) || 0})} 
               />
             </div>
             <div className="space-y-2">

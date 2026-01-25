@@ -66,8 +66,7 @@ const App: React.FC = () => {
         ]);
         setInsights(insData.map((i: any) => ({ ...i, updatedAt: Number(i.updated_at), focusPoints: i.focus_points, entryLevel: i.entry_level, completionStatus: i.completion_status })));
         setJournals(jrData.map((j: any) => ({ ...j, date: Number(j.date) })));
-        // Fix: Correct property names in mapping for investedAmount, yieldRate, and yieldAmount to match PositionEntry interface
-        setPositions(posData.map((p: any) => ({ ...p, signalTime: Number(p.signal_time), entryPrice: Number(p.entry_price), investedAmount: Number(p.invested_amount), yieldRate: Number(p.yield_rate), yieldAmount: Number(p.yield_amount), updatedAt: Number(p.updated_at), signalType: p.signal_type })));
+        setPositions(posData.map((p: any) => ({ ...p, signalTime: Number(p.signal_time), entryPrice: Number(p.entry_price), shares: Number(p.shares), yieldRate: Number(p.yield_rate), yieldAmount: Number(p.yield_amount), updatedAt: Number(p.updated_at), signalType: p.signal_type })));
       } catch (e) { console.error(e); }
     } else {
        setInsights(INITIAL_INSIGHTS);
@@ -143,7 +142,6 @@ const App: React.FC = () => {
       if (editingInsight) {
         await sql`UPDATE insights SET symbol=${finalData.symbol}, category=${finalData.category}, status=${finalData.status}, focus_points=${finalData.focusPoints}, strategy=${finalData.strategy}, entry_level=${finalData.entryLevel}, updated_at=${finalData.updatedAt}, completion_status=${finalData.completionStatus} WHERE id=${id}`;
       } else {
-        // Fix: Correct camelCase property names from finalData (focusPoints, entryLevel)
         await sql`INSERT INTO insights (id, symbol, category, status, focus_points, strategy, entry_level, updated_at, completion_status) VALUES (${id}, ${finalData.symbol}, ${finalData.category}, ${finalData.status}, ${finalData.focusPoints}, ${finalData.strategy}, ${finalData.entryLevel}, ${finalData.updatedAt}, ${finalData.completionStatus})`;
       }
       setShowInsightForm(false);
@@ -184,11 +182,9 @@ const App: React.FC = () => {
     const finalData = { ...data, id, updatedAt: Date.now() };
     try {
       if (editingPosition) {
-        // Fix: Correct camelCase property names (entryPrice, investedAmount, yieldRate, yieldAmount) from finalData
-        await sql`UPDATE positions SET symbol=${finalData.symbol}, category=${finalData.category}, signal_type=${finalData.signalType}, side=${finalData.side}, status=${finalData.status}, signal_time=${finalData.signalTime}, entry_price=${finalData.entryPrice}, invested_amount=${finalData.investedAmount}, yield_rate=${finalData.yieldRate}, yield_amount=${finalData.yieldAmount}, updated_at=${finalData.updatedAt} WHERE id=${id}`;
+        await sql`UPDATE positions SET symbol=${finalData.symbol}, category=${finalData.category}, signal_type=${finalData.signalType}, side=${finalData.side}, status=${finalData.status}, signal_time=${finalData.signalTime}, entry_price=${finalData.entryPrice}, shares=${finalData.shares}, yield_rate=${finalData.yieldRate}, yield_amount=${finalData.yieldAmount}, updated_at=${finalData.updatedAt} WHERE id=${id}`;
       } else {
-        // Fix: Correct camelCase property names (entryPrice, investedAmount, yieldRate, yieldAmount) from finalData
-        await sql`INSERT INTO positions (id, symbol, category, signal_type, side, status, signal_time, entry_price, invested_amount, yield_rate, yield_amount, updated_at) VALUES (${id}, ${finalData.symbol}, ${finalData.category}, ${finalData.signalType}, ${finalData.side}, ${finalData.status}, ${finalData.signalTime}, ${finalData.entryPrice}, ${finalData.investedAmount}, ${finalData.yieldRate}, ${finalData.yieldAmount}, ${finalData.updatedAt})`;
+        await sql`INSERT INTO positions (id, symbol, category, signal_type, side, status, signal_time, entry_price, shares, yield_rate, yield_amount, updated_at) VALUES (${id}, ${finalData.symbol}, ${finalData.category}, ${finalData.signalType}, ${finalData.side}, ${finalData.status}, ${finalData.signalTime}, ${finalData.entryPrice}, ${finalData.shares}, ${finalData.yieldRate}, ${finalData.yieldAmount}, ${finalData.updatedAt})`;
       }
       setShowPositionForm(false);
       fetchData();
@@ -275,7 +271,6 @@ const App: React.FC = () => {
           <div className="animate-in fade-in duration-700 slide-in-from-bottom-5">
             {sortMode === 'category' && (
               <div className="space-y-24">
-                {/* Active Section */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {activeInsights.map(i => (
                     <MarketCard 
@@ -298,7 +293,6 @@ const App: React.FC = () => {
                   )}
                 </div>
 
-                {/* Archived Section */}
                 {archivedInsights.length > 0 && (
                   <div className="pt-20 border-t border-white/5">
                     <div className="flex items-center gap-3 mb-12">
@@ -318,12 +312,6 @@ const App: React.FC = () => {
                         />
                       ))}
                     </div>
-                  </div>
-                )}
-
-                {activeInsights.length === 0 && archivedInsights.length === 0 && globalSearch && (
-                  <div className="py-40 text-center opacity-20 italic font-black text-3xl text-white tracking-tighter">
-                    No matching insights found
                   </div>
                 )}
               </div>

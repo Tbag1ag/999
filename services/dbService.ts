@@ -57,7 +57,7 @@ export const initDatabase = async () => {
         status TEXT DEFAULT '观察中',
         signal_time BIGINT,
         entry_price DOUBLE PRECISION,
-        invested_amount DOUBLE PRECISION DEFAULT 0,
+        shares DOUBLE PRECISION DEFAULT 1,
         yield_rate DOUBLE PRECISION DEFAULT 0,
         yield_amount DOUBLE PRECISION DEFAULT 0,
         updated_at BIGINT

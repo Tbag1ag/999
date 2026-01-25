@@ -49,16 +49,26 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
   };
 
   const stats = useMemo(() => {
-    const closedPositions = positions.filter(p => p.status === '已平仓');
-    const openPositions = positions.filter(p => p.status === '持仓中');
     const totalProfit = positions.reduce((sum, p) => sum + (p.yieldAmount || 0), 0);
     const totalEquity = INITIAL_CAPITAL + totalProfit;
-    const investedInOpen = openPositions.reduce((sum, p) => sum + (p.investedAmount || 0), 0);
-    const cash = totalEquity - investedInOpen;
-    const cashPercent = totalEquity > 0 ? (cash / totalEquity) * 100 : 100;
     const totalReturnRate = (totalProfit / INITIAL_CAPITAL) * 100;
+
+    // 简单模拟日收益率和月收益率（基于 24h 内和 30d 内的更新条目）
+    const now = Date.now();
+    const dayAgo = now - 86400000;
+    const monthAgo = now - 2592000000;
+
+    const dailyProfit = positions
+      .filter(p => p.updatedAt > dayAgo)
+      .reduce((sum, p) => sum + (p.yieldAmount || 0), 0);
+    const dailyReturnRate = (dailyProfit / INITIAL_CAPITAL) * 100;
+
+    const monthlyProfit = positions
+      .filter(p => p.updatedAt > monthAgo)
+      .reduce((sum, p) => sum + (p.yieldAmount || 0), 0);
+    const monthlyReturnRate = (monthlyProfit / INITIAL_CAPITAL) * 100;
     
-    return { totalEquity, cash, cashPercent, totalReturnRate };
+    return { totalEquity, dailyReturnRate, monthlyReturnRate, totalReturnRate };
   }, [positions]);
 
   const tabs: (PositionSignalType | '全部')[] = ['全部', 'Short Term', 'Medium Term', 'Long Term'];
@@ -93,8 +103,8 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 px-4 sm:px-0">
         {[
           { label: '总资产 (Equity)', value: `$${stats.totalEquity.toLocaleString()}` },
-          { label: '现金余额 (Cash)', value: `$${stats.cash.toLocaleString()}` },
-          { label: '可用现金 %', value: `${stats.cashPercent.toFixed(1)}%` },
+          { label: '日收益率 (Daily)', value: `${stats.dailyReturnRate > 0 ? '+' : ''}${stats.dailyReturnRate.toFixed(2)}%` },
+          { label: '月收益率 (Monthly)', value: `${stats.monthlyReturnRate > 0 ? '+' : ''}${stats.monthlyReturnRate.toFixed(2)}%` },
           { label: '总收益率 (ROI)', value: `${stats.totalReturnRate > 0 ? '+' : ''}${stats.totalReturnRate.toFixed(2)}%`, highlight: true }
         ].map((item, i) => (
           <div key={i} className="bg-glass p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[2.5rem] border border-white/10 flex flex-col justify-center">
@@ -132,7 +142,7 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
                   { key: 'symbol', label: '标的' },
                   { key: 'status', label: '状态' },
                   { key: 'signalType', label: '周期' },
-                  { key: 'investedAmount', label: '本金 ($)' },
+                  { key: 'shares', label: '股数' },
                   { key: 'entryPrice', label: '入场价' },
                   { key: 'yieldRate', label: '收益 %' },
                   { key: 'yieldAmount', label: '盈亏 ($)' }
@@ -169,7 +179,7 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
                     <span className="text-[12px] font-black text-black dark:text-white/80">{translateSignalType(pos.signalType)}</span>
                   </td>
                   <td className="px-8 py-8 font-black text-[15px] text-black dark:text-white/90">
-                    {pos.investedAmount?.toLocaleString() || '0'}
+                    {pos.shares?.toLocaleString() || '0'}
                   </td>
                   <td className="px-8 py-8 font-black text-[15px] text-black dark:text-white/90">
                     {pos.entryPrice || '/'}
@@ -216,8 +226,8 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
 
               <div className="grid grid-cols-3 gap-2 bg-black/5 dark:bg-black/20 p-5 rounded-[1.5rem]">
                  <div className="flex flex-col">
-                    <span className="text-[9px] font-black text-black/40 dark:text-white/40 uppercase tracking-widest mb-1">本金</span>
-                    <span className="text-sm font-black text-black dark:text-white">${pos.investedAmount?.toLocaleString()}</span>
+                    <span className="text-[9px] font-black text-black/40 dark:text-white/40 uppercase tracking-widest mb-1">股数</span>
+                    <span className="text-sm font-black text-black dark:text-white">{pos.shares?.toLocaleString()}</span>
                  </div>
                  <div className="flex flex-col">
                     <span className="text-[9px] font-black text-black/40 dark:text-white/40 uppercase tracking-widest mb-1">收益 %</span>

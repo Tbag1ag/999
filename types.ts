@@ -18,7 +18,7 @@ export interface PositionEntry {
   status: PositionStatus;
   signalTime: number;
   entryPrice: number;
-  investedAmount: number; // 投入本金
+  shares: number; // 股数
   yieldRate: number; // 收益率 (%)
   yieldAmount: number; // 收益额 ($)
   updatedAt: number;

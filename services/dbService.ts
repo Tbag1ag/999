@@ -63,17 +63,6 @@ export const initDatabase = async () => {
         updated_at BIGINT
       );
     `;
-    
-    await sql`
-      CREATE TABLE IF NOT EXISTS notifications (
-        id TEXT PRIMARY KEY,
-        title TEXT,
-        message TEXT,
-        timestamp BIGINT,
-        is_read BOOLEAN DEFAULT FALSE,
-        type TEXT
-      );
-    `;
   } catch (error) {
     console.error("数据库初始化失败:", error);
     throw error;

@@ -26,15 +26,6 @@ export interface PositionEntry {
 
 export type Category = '全部' | '指数' | '加密货币' | '美股' | 'A股' | '外汇';
 
-export interface AppNotification {
-  id: string;
-  title: string;
-  message: string;
-  timestamp: number;
-  isRead: boolean;
-  type: 'market' | 'news' | 'system' | '随笔' | '新闻' | '逻辑' | 'index' | 'position';
-}
-
 export interface FearGreedIndex {
   id: string;
   symbol: string;
@@ -89,6 +80,17 @@ export interface TrendSignal {
   content: string;
   priority: '高' | '中' | '低';
 }
+
+// Fixed: Added missing AppNotification interface for NotificationCenter
+export interface AppNotification {
+  id: string;
+  title: string;
+  message: string;
+  timestamp: number;
+  isRead: boolean;
+  type: EntryType | 'market' | 'system';
+}
+
 export interface AppConfig {
   isEmailEnabled: boolean;
   notificationEmail: string;

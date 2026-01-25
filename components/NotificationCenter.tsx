@@ -46,31 +46,39 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
     <div className="relative">
       <button 
         onClick={() => setIsOpen(true)}
-        className="relative p-2.5 bg-gray-50 hover:bg-gray-100 rounded-xl transition-all group active:scale-95"
+        className="relative p-2.5 bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-all group active:scale-95"
       >
-        <Bell className={`w-5 h-5 transition-colors ${unreadCount > 0 ? 'text-amber-500 fill-amber-50' : 'text-gray-400 group-hover:text-gray-900'}`} />
+        <Bell className={`w-5 h-5 transition-colors ${unreadCount > 0 ? 'text-amber-500 fill-amber-50' : 'text-gray-400 group-hover:text-gray-900 dark:text-gray-500 dark:group-hover:text-white'}`} />
         {unreadCount > 0 && (
-          <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full animate-pulse shadow-sm" />
+          <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-[#1a1d26] rounded-full animate-pulse shadow-sm" />
         )}
       </button>
 
+      {/* 遮罩层 - 使用极高的 z-index */}
       {isOpen && (
         <div 
-          className="fixed inset-0 z-[200] bg-[#12141c]/30 backdrop-blur-[2px] animate-in fade-in duration-300"
+          className="fixed inset-0 z-[9998] bg-black/40 backdrop-blur-[4px] animate-in fade-in duration-300"
           onClick={() => setIsOpen(false)}
         />
       )}
 
-      <div className={`fixed top-0 right-0 h-[100dvh] w-full sm:max-w-[380px] bg-white z-[210] shadow-[-20px_0_50px_-15px_rgba(0,0,0,0.1)] transition-transform duration-500 ease-out flex flex-col border-l border-gray-100 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+      {/* 侧边栏 */}
+      <div className={`fixed top-0 right-0 h-[100dvh] w-full sm:max-w-[380px] bg-white dark:bg-[#1a1d26] z-[9999] shadow-[-20px_0_50px_-15px_rgba(0,0,0,0.3)] transition-transform duration-500 ease-out flex flex-col border-l border-gray-100 dark:border-white/5 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         
-        <div className="px-6 py-5 border-b border-gray-50 flex items-center justify-between shrink-0">
+        <div className="px-6 py-5 border-b border-gray-50 dark:border-white/5 flex items-center justify-between shrink-0 bg-white/50 dark:bg-white/2 backdrop-blur-md">
           <div className="flex flex-col">
-            <h2 className="text-xl font-black text-[#12141c] tracking-tight">消息中心</h2>
+            <h2 className="text-xl font-black text-[#12141c] dark:text-white tracking-tight">消息中心</h2>
             <div className="flex items-center gap-2 mt-0.5">
               <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest">共 {notifications.length} 条通知</span>
             </div>
           </div>
-          <button onClick={() => setIsOpen(false)} className="w-10 h-10 flex items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-400 hover:text-gray-900 rounded-full transition-all">
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsOpen(false);
+            }} 
+            className="w-10 h-10 flex items-center justify-center bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-full transition-all"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -78,10 +86,10 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
         <div className="flex-grow overflow-y-auto px-4 sm:px-6 py-4 space-y-4 scrollbar-hide">
           {notifications.length === 0 ? (
             <div className="h-full min-h-[400px] flex flex-col items-center justify-center text-center">
-              <div className="w-20 h-20 bg-gray-50 rounded-[2rem] flex items-center justify-center mb-6">
-                <Inbox className="w-8 h-8 text-gray-200" />
+              <div className="w-20 h-20 bg-gray-50 dark:bg-white/5 rounded-[2rem] flex items-center justify-center mb-6">
+                <Inbox className="w-8 h-8 text-gray-200 dark:text-gray-700" />
               </div>
-              <p className="font-serif italic text-xl text-gray-300">目前空空如也...</p>
+              <p className="font-serif italic text-xl text-gray-300 dark:text-gray-600">目前空空如也...</p>
             </div>
           ) : (
             notifications.map((n, index) => {
@@ -89,8 +97,8 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
               return (
                 <div 
                   key={n.id} 
-                  className="group relative p-5 rounded-[2rem] border transition-all animate-in fade-in slide-in-from-right-4 duration-500"
-                  style={{ animationDelay: `${index * 50}ms`, backgroundColor: n.isRead ? 'transparent' : '#fff' }}
+                  className="group relative p-5 rounded-[2rem] border dark:border-white/5 transition-all animate-in fade-in slide-in-from-right-4 duration-500"
+                  style={{ animationDelay: `${index * 50}ms` }}
                   onClick={() => !n.isRead && onMarkAsRead(n.id)}
                 >
                   <div className={`absolute inset-0 rounded-[2rem] transition-opacity ${n.isRead ? 'opacity-0' : `opacity-100 shadow-sm border ${style.accent} ring-1`}`} />
@@ -100,17 +108,12 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
                     </div>
                     <div className="flex-grow min-w-0">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">{formatTime(n.timestamp)}</span>
+                        <span className="text-[10px] font-black text-gray-300 dark:text-gray-600 uppercase tracking-widest">{formatTime(n.timestamp)}</span>
                         {!n.isRead && <span className={`h-2 w-2 rounded-full ${n.type === 'market' ? 'bg-red-500' : 'bg-amber-500'}`} />}
                       </div>
-                      <h4 className="text-sm font-black text-[#12141c] mb-1 truncate">{n.title}</h4>
-                      <p className="text-[13px] text-gray-500 leading-relaxed line-clamp-2">{n.message}</p>
+                      <h4 className="text-sm font-black text-[#12141c] dark:text-white mb-1 truncate">{n.title}</h4>
+                      <p className="text-[13px] text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-2">{n.message}</p>
                     </div>
-                  </div>
-                  <div className="absolute top-2 right-2 flex gap-1 sm:opacity-0 group-hover:opacity-100 transition-all">
-                     <button onClick={(e) => { e.stopPropagation(); onDelete(n.id); }} className="p-1.5 bg-white shadow-xl border border-gray-100 rounded-lg text-red-400">
-                       <Trash2 className="w-3.5 h-3.5" />
-                     </button>
                   </div>
                 </div>
               );
@@ -119,8 +122,8 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
         </div>
 
         {notifications.length > 0 && (
-          <div className="p-6 border-t border-gray-50 bg-white/50 backdrop-blur-md shrink-0">
-            <button onClick={onClearAll} className="w-full py-4 rounded-2xl bg-[#12141c] text-white font-black text-sm flex items-center justify-center gap-2 active:scale-95 transition-all shadow-xl shadow-gray-200">
+          <div className="p-6 border-t border-gray-50 dark:border-white/5 bg-white/50 dark:bg-[#1a1d26]/50 backdrop-blur-md shrink-0">
+            <button onClick={onClearAll} className="w-full py-4 rounded-2xl bg-[#12141c] dark:bg-amber-500 text-white font-black text-sm flex items-center justify-center gap-2 active:scale-95 transition-all shadow-xl">
               <Trash2 className="w-4 h-4" /> 全部清除
             </button>
           </div>

@@ -17,6 +17,7 @@ import {
   Moon, 
   TrendingUp,
   Search,
+  X,
   Archive
 } from 'lucide-react';
 
@@ -184,6 +185,7 @@ const App: React.FC = () => {
   const handleSavePosition = async (data: Partial<PositionEntry>) => {
     if (!sql) return;
     const id = editingPosition?.id || crypto.randomUUID();
+    // 确保 signalTime 存在（如果是新记录，使用表单传来的或当前时间）
     const finalData = { 
       ...data, 
       id, 
@@ -193,13 +195,17 @@ const App: React.FC = () => {
     
     try {
       if (editingPosition) {
+        // 修复：将 yield_amount 映射到 finalData.yieldAmount 而非 yield_amount
         await sql`UPDATE positions SET symbol=${finalData.symbol}, category=${finalData.category}, signal_type=${finalData.signalType}, side=${finalData.side}, status=${finalData.status}, signal_time=${finalData.signalTime}, entry_price=${finalData.entryPrice}, shares=${finalData.shares}, yield_rate=${finalData.yieldRate}, yield_amount=${finalData.yieldAmount}, updated_at=${finalData.updatedAt} WHERE id=${id}`;
       } else {
         await sql`INSERT INTO positions (id, symbol, category, signal_type, side, status, signal_time, entry_price, shares, yield_rate, yield_amount, updated_at) VALUES (${id}, ${finalData.symbol}, ${finalData.category}, ${finalData.signalType}, ${finalData.side}, ${finalData.status}, ${finalData.signalTime}, ${finalData.entryPrice}, ${finalData.shares}, ${finalData.yieldRate}, ${finalData.yieldAmount}, ${finalData.updatedAt})`;
       }
       setShowPositionForm(false);
       fetchData();
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+      console.error("Position Save Error:", e);
+      alert("保存持仓失败，请检查数据库配置。");
+    }
   };
 
   const handleDeletePosition = async (id: string) => {
@@ -215,67 +221,68 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen pt-24 sm:pt-32 pb-32 relative bg-[#0d1117]">
+    <div className="min-h-screen pt-28 sm:pt-36 pb-32 sm:pb-40 relative">
       <div className="app-bg" style={{ backgroundImage: `url('${bgImage}')` }}></div>
       <div className="app-bg-overlay"></div>
 
-      <header className="fixed top-0 left-0 right-0 z-[100] border-b border-white/5 bg-[#0d1117]/60 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 h-16 sm:h-20 flex items-center justify-between">
-          <button onClick={handleLogoClick} className="flex items-center gap-3 active:scale-95 transition-all">
-            <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center text-white shadow-lg shadow-amber-500/20">
-              <TrendingUp className="w-4 h-4" />
+      <header className="fixed top-0 sm:top-8 left-1/2 -translate-x-1/2 z-[100] w-full sm:w-[94%] max-w-6xl">
+        <div className="stadium-nav px-4 sm:px-8 py-3 sm:py-4 flex items-center justify-between sm:rounded-full rounded-b-[1.5rem] shadow-lg">
+          <button 
+            onClick={handleLogoClick}
+            className="flex items-center gap-3 sm:gap-4 group active:scale-95 transition-all"
+          >
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-amber-500 rounded-full flex items-center justify-center text-white shadow-lg group-hover:bg-amber-600 transition-colors">
+              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <h1 className="text-sm font-black text-white uppercase tracking-tighter">Market Pro</h1>
+            <h1 className="hidden sm:block text-sm font-black text-gray-900 dark:text-white uppercase tracking-tighter">市场周刊V2.0</h1>
           </button>
 
-          <nav className="flex h-full">
+          <nav className="flex items-center gap-1 sm:gap-1.5 bg-black/5 dark:bg-white/5 p-1 rounded-full">
             {[
-              { id: 'category', label: '洞察' },
-              { id: 'journal', label: '情报' },
-              { id: 'positions', label: '持仓' }
+              { id: 'category', icon: <LayoutGrid className="w-4 h-4" />, label: '洞察' },
+              { id: 'journal', icon: <Zap className="w-4 h-4" />, label: '情报' },
+              { id: 'positions', icon: <TrendingUp className="w-4 h-4" />, label: '持仓' }
             ].map(tab => (
               <button 
                 key={tab.id}
                 onClick={() => setSortMode(tab.id as any)}
-                className={`relative px-4 sm:px-8 h-full flex items-center text-[11px] sm:text-[12px] font-black tracking-widest transition-all uppercase ${sortMode === tab.id ? 'text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                className={`flex items-center gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-full text-[11px] sm:text-[12px] font-black transition-all ${sortMode === tab.id ? 'bg-market-dark text-white shadow-xl dark:bg-amber-500' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}
               >
-                {tab.label}
-                {sortMode === tab.id && (
-                  <div className="absolute bottom-0 left-4 right-4 h-0.5 bg-amber-500 rounded-full animate-in fade-in slide-in-from-bottom-1" />
-                )}
+                {tab.icon} <span className="hidden sm:inline">{tab.label}</span>
               </button>
             ))}
           </nav>
 
-          <div className="flex items-center gap-4">
-             <div className="relative hidden sm:flex items-center">
-                <div className={`flex items-center bg-white/5 rounded-xl px-4 py-2 border border-transparent focus-within:border-amber-500/30 transition-all ${globalSearch ? 'w-64' : 'w-48'}`}>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+             <div className="relative flex items-center">
+                <div className={`flex items-center bg-black/5 dark:bg-white/10 rounded-full px-3 py-1.5 sm:px-4 sm:py-2 transition-all duration-500 border border-transparent focus-within:border-amber-500/50 focus-within:bg-white dark:focus-within:bg-black/40 ${globalSearch ? 'w-32 sm:w-64' : 'w-8 sm:w-48'}`}>
                    <Search className={`w-3.5 h-3.5 shrink-0 ${globalSearch ? 'text-amber-500' : 'text-gray-400'}`} />
                    <input 
                      type="text"
                      placeholder="搜索..."
-                     className="bg-transparent outline-none text-[12px] font-bold text-white ml-2 w-full"
+                     className={`bg-transparent outline-none text-[12px] font-bold dark:text-white transition-all duration-500 ml-1.5 sm:ml-2 w-full ${!globalSearch && 'opacity-0 pointer-events-none sm:opacity-100 sm:pointer-events-auto'}`}
                      value={globalSearch}
                      onChange={(e) => setGlobalSearch(e.target.value)}
                    />
                 </div>
              </div>
-             <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2 text-gray-400 hover:text-white transition-colors">
-               {isDarkMode ? <Sun className="w-4.5 h-4.5" /> : <Moon className="w-4.5 h-4.5" />}
+
+             <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2 text-gray-400 hover:text-amber-500 transition-colors">
+               {isDarkMode ? <Sun className="w-4 h-4 sm:w-4.5 sm:h-4.5" /> : <Moon className="w-4 h-4 sm:w-4.5 sm:h-4.5" />}
              </button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto pt-8">
+      <main className="max-w-[1400px] mx-auto px-4 sm:px-10 relative z-10">
         {loading ? (
           <div className="h-[60vh] flex items-center justify-center">
             <div className="w-10 h-10 border-4 border-amber-500/20 border-t-amber-500 rounded-full animate-spin"></div>
           </div>
         ) : (
-          <div className="px-4 sm:px-10">
+          <div className="animate-in fade-in duration-700 slide-in-from-bottom-5">
             {sortMode === 'category' && (
-              <div className="space-y-16">
+              <div className="space-y-16 sm:space-y-24">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                   {activeInsights.map(i => (
                     <MarketCard 
@@ -290,19 +297,19 @@ const App: React.FC = () => {
                   {isAdmin && !globalSearch && (
                     <button 
                       onClick={handleOpenAddForm}
-                      className="bg-white/5 border-2 border-dashed border-white/5 rounded-3xl min-h-[480px] flex flex-col items-center justify-center group hover:border-amber-500/40 transition-all"
+                      className="bg-white/5 border-2 border-dashed border-white/10 rounded-[2.5rem] sm:rounded-[3rem] h-[320px] sm:h-full sm:min-h-[540px] flex flex-col items-center justify-center group hover:border-amber-500/40 transition-all backdrop-blur-sm"
                     >
-                      <Plus className="w-10 h-10 text-white/10 group-hover:text-amber-500 transition-all" />
-                      <span className="text-xs font-black text-white/10 mt-4 group-hover:text-white uppercase tracking-widest">New Entry</span>
+                      <Plus className="w-10 h-10 text-white/20 group-hover:text-white transition-all" />
+                      <span className="text-sm font-black text-white/20 mt-4 group-hover:text-white uppercase tracking-widest">New Probe</span>
                     </button>
                   )}
                 </div>
 
                 {archivedInsights.length > 0 && (
-                  <div className="pt-16 border-t border-white/5">
-                    <div className="flex items-center gap-3 mb-10">
-                      <Archive className="w-5 h-5 text-white/30" />
-                      <h2 className="text-[11px] font-black text-white/30 uppercase tracking-[0.4em]">Archived History</h2>
+                  <div className="pt-16 sm:pt-20 border-t border-white/5">
+                    <div className="flex items-center gap-3 mb-8 sm:mb-12">
+                      <Archive className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400/50" />
+                      <h2 className="text-lg sm:text-xl font-black text-white/30 uppercase tracking-[0.4em]">已归档 ARCHIVED</h2>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                       {archivedInsights.map(i => (
@@ -344,16 +351,36 @@ const App: React.FC = () => {
       </main>
 
       {isAdmin && (
-        <div className="fixed bottom-10 right-10 z-[110]">
-           <button onClick={handleOpenAddForm} className="w-16 h-16 bg-amber-500 text-white rounded-2xl flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all shadow-amber-500/20">
-             <Plus className="w-8 h-8" />
+        <div className="fixed bottom-6 sm:bottom-10 right-6 sm:right-10 z-[110] mb-[env(safe-area-inset-bottom)]">
+           <button onClick={handleOpenAddForm} className="w-14 h-14 sm:w-16 sm:h-16 bg-market-dark dark:bg-amber-500 text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all">
+             <Plus className="w-6 h-6 sm:w-8 sm:h-8" />
            </button>
         </div>
       )}
 
-      {showInsightForm && <InsightForm initialData={editingInsight} onSave={handleSaveInsight} onCancel={() => setShowInsightForm(false)} />}
-      {showJournalForm && <JournalForm initialData={editingJournal} onSave={handleSaveJournal} onCancel={() => setShowJournalForm(false)} />}
-      {showPositionForm && <PositionForm initialData={editingPosition} onSave={handleSavePosition} onCancel={() => setShowPositionForm(false)} />}
+      {showInsightForm && (
+        <InsightForm 
+          initialData={editingInsight} 
+          onSave={handleSaveInsight} 
+          onCancel={() => setShowInsightForm(false)} 
+        />
+      )}
+
+      {showJournalForm && (
+        <JournalForm 
+          initialData={editingJournal} 
+          onSave={handleSaveJournal} 
+          onCancel={() => setShowJournalForm(false)} 
+        />
+      )}
+
+      {showPositionForm && (
+        <PositionForm 
+          initialData={editingPosition} 
+          onSave={handleSavePosition} 
+          onCancel={() => setShowPositionForm(false)} 
+        />
+      )}
     </div>
   );
 };

@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=0" />
     <title>市场周刊 | Market Weekly</title>
     
-    <!-- iOS 专用配置 -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="市场周刊" />
@@ -31,7 +30,7 @@
     <style>
       *, *::before, *::after {
         transition: background-color 0.4s, border-color 0.4s, color 0.4s, transform 0.4s, opacity 0.4s, backdrop-filter 0.4s, box-shadow 0.4s;
-        -webkit-tap-highlight-color: transparent; /* 消除 iOS 点击高亮 */
+        -webkit-tap-highlight-color: transparent;
       }
 
       body {
@@ -39,7 +38,6 @@
         margin: 0;
         background: #0d1117;
         overflow-x: hidden;
-        /* 适配 iOS 安全区域 */
         padding-top: env(safe-area-inset-top);
         padding-bottom: env(safe-area-inset-bottom);
       }
@@ -67,18 +65,23 @@
         pointer-events: none;
       }
 
-      /* 奶油磨砂闪卡质感 */
+      /* 统一的玻璃质感，移除移动端过度圆角 */
       .bg-glass {
         background: rgba(255, 255, 255, 0.12);
         backdrop-filter: blur(60px) saturate(180%);
         -webkit-backdrop-filter: blur(60px) saturate(180%);
-        border: none !important;
+        border-radius: 2.5rem;
         box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.1);
+      }
+
+      @media (max-width: 640px) {
+        .bg-glass {
+          border-radius: 1rem; /* 移动端使用更标准的圆角 */
+        }
       }
 
       .dark .bg-glass {
         background: rgba(22, 26, 34, 0.65);
-        border: none !important;
         box-shadow: 0 40px 100px -30px rgba(0, 0, 0, 0.4);
       }
 
@@ -86,8 +89,14 @@
         background: rgba(255, 255, 255, 0.55);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
-        border-radius: 2rem;
+        border-radius: 1.5rem;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+      }
+
+      @media (max-width: 640px) {
+        .strategy-box {
+          border-radius: 1rem;
+        }
       }
 
       .dark .strategy-box {
@@ -95,11 +104,9 @@
       }
 
       .stadium-nav {
-        border-radius: 999px;
         background: rgba(255, 255, 255, 0.15);
         backdrop-filter: blur(40px) saturate(150%);
         -webkit-backdrop-filter: blur(40px) saturate(150%);
-        border: none !important;
       }
       
       .dark .stadium-nav {
@@ -108,7 +115,6 @@
 
       ::-webkit-scrollbar { width: 0px; }
 
-      /* 防止输入框在聚焦时缩放页面 */
       @media screen and (max-width: 768px) {
         input, select, textarea {
           font-size: 16px !important;

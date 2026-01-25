@@ -1,7 +1,17 @@
 
 import React, { useState, useMemo } from 'react';
 import { JournalEntry, EntryType } from '../types';
-import { Trash2, Edit3, Link, MessageSquare, Newspaper, Zap, X, Check } from 'lucide-react';
+import { 
+  Zap, 
+  MessageSquare, 
+  Newspaper, 
+  Edit2, 
+  Trash2, 
+  ChevronDown, 
+  ChevronUp,
+  Clock,
+  Filter
+} from 'lucide-react';
 
 interface JournalSectionProps {
   entries: JournalEntry[];
@@ -10,221 +20,144 @@ interface JournalSectionProps {
   onDelete: (id: string) => void;
 }
 
-const getTypeStyles = (type?: EntryType) => {
-  const baseBorder = 'border-2 border-gray-100/80 dark:border-white/10';
-  switch (type) {
-    case '新闻':
-      return {
-        cardBg: 'bg-blue-50/30 dark:bg-blue-900/10',
-        cardBorder: baseBorder,
-        iconBg: 'bg-blue-500',
-        iconText: 'text-white',
-        tagBg: 'bg-blue-100 dark:bg-blue-900/30',
-        tagText: 'text-blue-600 dark:text-blue-400',
-        hoverShadow: 'group-hover:shadow-blue-200/40 dark:group-hover:shadow-none',
-        accentColor: 'text-blue-500'
-      };
-    case '逻辑':
-      return {
-        cardBg: 'bg-amber-50/30 dark:bg-amber-900/10',
-        cardBorder: baseBorder,
-        iconBg: 'bg-amber-500',
-        iconText: 'text-white',
-        tagBg: 'bg-amber-100 dark:bg-amber-900/30',
-        tagText: 'text-amber-700 dark:text-amber-400',
-        hoverShadow: 'group-hover:shadow-amber-200/40 dark:group-hover:shadow-none',
-        accentColor: 'text-amber-600'
-      };
-    case '随笔':
-    default:
-      return {
-        cardBg: 'bg-purple-50/30 dark:bg-purple-900/10',
-        cardBorder: baseBorder,
-        iconBg: 'bg-purple-500',
-        iconText: 'text-white',
-        tagBg: 'bg-purple-100 dark:bg-purple-900/30',
-        tagText: 'text-purple-600 dark:text-purple-400',
-        hoverShadow: 'group-hover:shadow-purple-200/40 dark:group-hover:shadow-none',
-        accentColor: 'text-purple-500'
-      };
-  }
-};
-
-const TypeIcon = ({ type }: { type?: EntryType }) => {
-  switch (type) {
-    case '新闻': return <Newspaper className="w-4 h-4" />;
-    case '逻辑': return <Zap className="w-4 h-4" />;
-    default: return <MessageSquare className="w-4 h-4" />;
-  }
-};
-
-const formatTime = (timestamp: number) => {
-  const now = Date.now();
-  const diff = now - timestamp;
-  
-  if (diff < 60000) return <><span className="font-bold text-gray-900 dark:text-white">1</span> 分钟内</>;
-  
-  if (diff < 3600000) {
-    const mins = Math.floor(diff / 60000);
-    return <><span className="font-bold text-gray-900 dark:text-white">{mins}</span> 分钟前</>;
-  }
-  
-  if (diff < 86400000) {
-    const hours = Math.floor(diff / 3600000);
-    return <><span className="font-bold text-gray-900 dark:text-white">{hours}</span> 小时前</>;
-  }
-
-  const date = new Date(timestamp);
-  const isThisYear = date.getFullYear() === new Date().getFullYear();
-  
-  return isThisYear 
-    ? date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })
-    : date.toLocaleDateString('zh-CN', { year: 'numeric', month: 'short', day: 'numeric' });
-};
-
 const JournalSection: React.FC<JournalSectionProps> = ({ entries, isAdmin, onEdit, onDelete }) => {
-  const [activeFilter, setActiveFilter] = useState<EntryType | '全部'>('全部');
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
-  const filters: (EntryType | '全部')[] = ['全部', '随笔', '新闻', '逻辑'];
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [filterType, setFilterType] = useState<EntryType | '全部'>('全部');
 
   const filteredEntries = useMemo(() => {
-    if (activeFilter === '全部') return entries;
-    return entries.filter(e => e.type === activeFilter);
-  }, [entries, activeFilter]);
+    return entries.filter(e => filterType === '全部' || e.type === filterType);
+  }, [entries, filterType]);
+
+  const toggleExpand = (id: string) => {
+    setExpandedId(expandedId === id ? null : id);
+  };
+
+  const getTypeStyle = (type?: EntryType) => {
+    switch (type) {
+      case '新闻': return { icon: <Newspaper className="w-5 h-5" />, color: 'text-blue-500', bg: 'bg-blue-500/10' };
+      case '逻辑': return { icon: <Zap className="w-5 h-5" />, color: 'text-amber-500', bg: 'bg-amber-500/10' };
+      default: return { icon: <MessageSquare className="w-5 h-5" />, color: 'text-purple-500', bg: 'bg-purple-500/10' };
+    }
+  };
 
   return (
-    <div className="max-w-3xl mx-auto pb-32 px-4 sm:px-0 transition-colors duration-300">
-      <div className="flex items-center gap-2 mb-10 overflow-x-auto pb-2 scrollbar-hide">
-        {filters.map(f => (
-          <button
-            key={f}
-            onClick={() => setActiveFilter(f)}
-            className={`px-5 py-2 rounded-full text-[13px] font-black transition-all whitespace-nowrap ${
-              activeFilter === f 
-                ? 'bg-[#12141c] dark:bg-amber-500 text-white shadow-lg shadow-gray-200 dark:shadow-none' 
-                : 'text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white bg-gray-50 dark:bg-white/5'
-            }`}
-          >
-            {f}
-          </button>
-        ))}
-        <div className="ml-auto text-[10px] font-black text-gray-300 dark:text-gray-600 uppercase tracking-widest pl-4 hidden sm:block">
-          共 {filteredEntries.length} 条记录
+    <div className="max-w-4xl mx-auto">
+      {/* Top Filter Bar */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-6 mb-12">
+        <div className="flex bg-black/5 dark:bg-white/5 p-1.5 rounded-[2rem] gap-1 shadow-inner">
+          {['全部', '随笔', '新闻', '逻辑'].map((t) => (
+            <button
+              key={t}
+              onClick={() => setFilterType(t as any)}
+              className={`px-8 py-2.5 rounded-full text-[13px] font-black transition-all ${
+                filterType === t 
+                ? 'bg-market-dark text-white dark:bg-amber-500 shadow-xl' 
+                : 'text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2 text-[11px] font-black text-white/40 uppercase tracking-widest">
+           共 {filteredEntries.length} 条记录
         </div>
       </div>
 
-      {filteredEntries.length === 0 ? (
-        <div className="text-center py-20 opacity-30 italic font-serif text-xl dark:text-gray-400">
-          暂无相关记录...
-        </div>
-      ) : (
-        <div className="relative space-y-8">
-          <div className="absolute left-0 md:-left-12 top-0 bottom-0 w-px bg-gradient-to-b from-gray-200 via-gray-100 to-transparent dark:from-white/10 dark:via-white/5 dark:to-transparent hidden md:block" />
-
-          {filteredEntries.map((entry, index) => {
-            const styles = getTypeStyles(entry.type);
-            const isConfirming = confirmDeleteId === entry.id;
-
+      {/* Intelligence List with Timeline Line */}
+      <div className="relative pl-8 sm:pl-12 border-l-2 border-white/5 space-y-8 pb-20">
+        {filteredEntries.length === 0 ? (
+          <div className="py-40 text-center opacity-20 italic font-black text-3xl text-white">
+            No Intel Captured...
+          </div>
+        ) : (
+          filteredEntries.map((entry) => {
+            const isExpanded = expandedId === entry.id;
+            const style = getTypeStyle(entry.type);
+            
             return (
-              <div 
-                key={entry.id} 
-                className="group relative animate-in fade-in slide-in-from-bottom-4 duration-500"
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <div className={`absolute -left-[51.5px] top-[26px] w-2 h-2 rounded-full bg-white dark:bg-[#0f1117] border-2 border-gray-200 dark:border-white/10 hidden md:block z-10 transition-colors group-hover:border-[#12141c] dark:group-hover:border-amber-500`} />
+              <div key={entry.id} className="relative">
+                {/* Timeline Dot/Icon */}
+                <div className={`absolute -left-[45px] sm:-left-[61px] top-4 w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 z-10 ${isExpanded ? 'bg-amber-500 text-white scale-110 shadow-lg shadow-amber-500/20' : 'bg-gray-800 text-gray-400 border border-white/5'}`}>
+                   {style.icon}
+                </div>
 
-                <div className={`bg-white dark:bg-[#1a1d26] rounded-[2.5rem] ${styles.cardBorder} p-8 shadow-sm transition-all duration-300 ${styles.cardBg} group-hover:shadow-xl group-hover:border-gray-200 dark:group-hover:border-white/20 group-hover:-translate-y-1`}>
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 flex items-center justify-center rounded-2xl shadow-lg transition-all ${styles.iconBg} ${styles.iconText} group-hover:scale-110`}>
-                        <TypeIcon type={entry.type} />
-                      </div>
-                      
-                      <div className="flex flex-col">
-                        <div className="flex items-center gap-2">
-                          <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${styles.tagBg} ${styles.tagText}`}>
-                            {entry.type}
-                          </span>
-                          <span className="text-[12px] font-medium text-gray-400 dark:text-gray-500">
-                            {formatTime(entry.date)}
-                          </span>
-                        </div>
-                      </div>
+                {/* Collapsible Card */}
+                <div 
+                  className={`bg-glass rounded-[2.5rem] overflow-hidden transition-all duration-500 border-2 ${isExpanded ? 'border-amber-500/30 ring-1 ring-amber-500/10' : 'border-transparent hover:border-white/10'}`}
+                >
+                  <div 
+                    onClick={() => toggleExpand(entry.id)}
+                    className="p-8 sm:p-10 cursor-pointer flex flex-col items-start gap-4"
+                  >
+                    <div className="flex items-center gap-4">
+                       <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${style.bg} ${style.color}`}>
+                         {entry.type}
+                       </span>
+                       <div className="flex items-center gap-2 text-[11px] font-black text-gray-400 uppercase tracking-widest">
+                         <Clock className="w-3.5 h-3.5" />
+                         {new Date(entry.date).toLocaleDateString('zh-CN', { month: 'long', day: 'numeric' })}
+                       </div>
                     </div>
 
-                    {isAdmin && (
-                      <div className="flex gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-auto">
-                        {!isConfirming ? (
-                          <>
-                            <button 
-                              type="button"
-                              onClick={(e) => { e.stopPropagation(); onEdit(entry); }} 
-                              className="p-2 text-gray-400 dark:text-gray-600 hover:text-[#12141c] dark:hover:text-white hover:bg-white dark:hover:bg-white/5 rounded-xl transition-all"
-                              title="编辑"
-                            >
-                              <Edit3 className="w-3.5 h-3.5" />
-                            </button>
-                            <button 
-                              type="button"
-                              onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(entry.id); }} 
-                              className="p-2 text-gray-400 dark:text-gray-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"
-                              title="删除"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </>
-                        ) : (
-                          <div className="flex items-center gap-1 animate-in slide-in-from-right-2 duration-300">
-                            <button 
-                              type="button"
-                              onClick={(e) => { e.stopPropagation(); onDelete(entry.id); setConfirmDeleteId(null); }} 
-                              className="px-3 py-1.5 bg-red-500 text-white text-[10px] font-black rounded-lg hover:bg-red-600 transition-all flex items-center gap-1.5 shadow-lg shadow-red-200 dark:shadow-none"
-                            >
-                              <Check className="w-3 h-3" /> 确认删除
-                            </button>
-                            <button 
-                              type="button"
-                              onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(null); }} 
-                              className="p-1.5 bg-gray-100 dark:bg-white/5 text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white rounded-lg transition-all"
-                            >
-                              <X className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        )}
+                    <div className="flex items-center justify-between w-full gap-6">
+                      <h3 className={`text-2xl sm:text-3xl font-black tracking-tight leading-tight transition-colors ${isExpanded ? 'text-amber-500' : 'text-[#12141c] dark:text-white'}`}>
+                        {entry.title || "未命名简报"}
+                      </h3>
+                      <div className={`transition-transform duration-500 ${isExpanded ? 'rotate-180' : ''}`}>
+                         <ChevronDown className={`w-8 h-8 ${isExpanded ? 'text-amber-500' : 'text-gray-300'}`} />
                       </div>
-                    )}
+                    </div>
                   </div>
 
-                  {entry.title && (
-                    <h4 className="text-2xl font-black text-[#12141c] dark:text-white mb-4 tracking-tight leading-tight">
-                      {entry.title}
-                    </h4>
-                  )}
+                  {/* Expandable Content Area */}
+                  <div 
+                    className={`transition-all duration-500 ease-in-out ${isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}
+                  >
+                    <div className="px-10 pb-12 pt-4 border-t border-black/5 dark:border-white/5">
+                      <div className="prose prose-invert max-w-none">
+                        <p className="text-[17px] sm:text-[18px] text-gray-600 dark:text-gray-300 leading-relaxed font-medium whitespace-pre-wrap">
+                          {entry.content}
+                        </p>
+                      </div>
 
-                  <div className="relative">
-                    <p className="text-[16px] leading-relaxed text-gray-700 dark:text-gray-300 font-medium whitespace-pre-wrap">
-                      {entry.content}
-                    </p>
+                      <div className="mt-12 flex items-center justify-between gap-4">
+                         {entry.source && (
+                           <a 
+                             href={entry.source} 
+                             target="_blank" 
+                             rel="noopener noreferrer"
+                             className="text-[12px] font-black text-amber-500 hover:underline uppercase tracking-widest"
+                           >
+                             查看来源情报 →
+                           </a>
+                         )}
+                         <div className="flex-grow"></div>
+                         {isAdmin && (
+                           <div className="flex gap-2">
+                             <button 
+                               onClick={(e) => { e.stopPropagation(); onEdit(entry); }} 
+                               className="px-6 py-2.5 bg-gray-900/10 dark:bg-white/5 text-[11px] font-black text-gray-400 hover:text-amber-500 transition-all rounded-xl border border-white/5"
+                             >
+                               EDIT
+                             </button>
+                             <button 
+                               onClick={(e) => { e.stopPropagation(); onDelete(entry.id); }} 
+                               className="px-6 py-2.5 bg-red-500/10 text-[11px] font-black text-red-400 hover:bg-red-500 hover:text-white transition-all rounded-xl border border-red-500/20"
+                             >
+                               DELETE
+                             </button>
+                           </div>
+                         )}
+                      </div>
+                    </div>
                   </div>
-
-                  {entry.source && (
-                    <a 
-                      href={entry.source.startsWith('http') ? entry.source : `https://${entry.source}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className={`mt-6 flex items-center gap-2 w-fit px-4 py-2 rounded-xl cursor-pointer transition-all border-2 border-gray-100/50 dark:border-white/5 bg-white/50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 hover:shadow-md hover:scale-[1.02] active:scale-95 shadow-sm group/link`}
-                    >
-                      <Link className={`w-3.5 h-3.5 ${styles.accentColor} group-hover/link:rotate-12 transition-transform`} />
-                      <span className="text-[11px] font-bold truncate max-w-[180px] sm:max-w-[300px] text-gray-500 dark:text-gray-400">{entry.source}</span>
-                    </a>
-                  )}
                 </div>
               </div>
             );
-          })}
-        </div>
-      )}
+          })
+        )}
+      </div>
     </div>
   );
 };

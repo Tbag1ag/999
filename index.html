@@ -4,86 +4,99 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>市场周刊 | 沉浸式行情记录</title>
+    <title>市场周刊 | Market Weekly</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
         darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              'market-dark': '#12141c',
+            }
+          }
+        }
       }
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-      /* 玻璃拟态全局优化 */
       *, *::before, *::after {
-        transition-property: background-color, border-color, color, transform, box-shadow, backdrop-filter;
-        transition-duration: 400ms;
-        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        transition: background-color 0.4s, border-color 0.4s, color 0.4s, transform 0.4s, opacity 0.4s, backdrop-filter 0.4s, box-shadow 0.4s;
       }
 
       body {
         font-family: 'Inter', sans-serif;
         margin: 0;
+        background: #0d1117;
         overflow-x: hidden;
       }
 
-      .bg-glass {
-        background: rgba(255, 255, 255, 0.6);
-        backdrop-filter: blur(25px) saturate(180%);
-        -webkit-backdrop-filter: blur(25px) saturate(180%);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-      }
-
-      .dark .bg-glass {
-        background: rgba(15, 23, 17, 0.7);
-        backdrop-filter: blur(30px) saturate(200%);
-        -webkit-backdrop-filter: blur(30px) saturate(200%);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-      }
-
-      .main-bg {
+      /* 沉浸式背景层基础样式 */
+      .app-bg {
         position: fixed;
         top: 0;
         left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: -1;
+        width: 100vw;
+        height: 100vh;
+        z-index: -2;
         object-fit: cover;
-        transition: opacity 1s ease-in-out;
+        background-size: cover;
+        background-position: center;
       }
-      
-      .main-bg-overlay {
+
+      .app-bg-overlay {
         position: fixed;
         top: 0;
         left: 0;
-        width: 100%;
-        height: 100%;
+        width: 100vw;
+        height: 100vh;
         z-index: -1;
-        background: rgba(0,0,0,0.02);
+        background: radial-gradient(circle at center, transparent 10%, rgba(0,0,0,0.3) 100%);
         pointer-events: none;
       }
 
-      .dark .main-bg {
-        filter: brightness(0.7) contrast(1.1) saturate(1.2);
+      /* 玻璃拟态卡片 */
+      .bg-glass {
+        background: rgba(255, 255, 255, 0.5);
+        backdrop-filter: blur(40px) saturate(180%);
+        -webkit-backdrop-filter: blur(40px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 40px 120px -20px rgba(0, 0, 0, 0.15);
       }
 
-      .font-serif {
-        font-family: 'Playfair+Display', serif;
+      .dark .bg-glass {
+        background: rgba(20, 25, 31, 0.65);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 40px 120px -30px rgba(0, 0, 0, 0.5);
+      }
+
+      .stadium-nav {
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(30px) saturate(150%);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 0 15px 50px -10px rgba(0, 0, 0, 0.1);
+      }
+      
+      .dark .stadium-nav {
+        background: rgba(30, 35, 45, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .strategy-box {
+        background: rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .dark .strategy-box {
+        background: rgba(0, 0, 0, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.05);
       }
 
       ::-webkit-scrollbar { width: 0px; }
-      
-      .stadium-nav {
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.75);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.4);
-      }
-      .dark .stadium-nav {
-        background: rgba(20, 30, 25, 0.75);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-      }
     </style>
   <script type="importmap">
 {

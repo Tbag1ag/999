@@ -8,7 +8,8 @@ import {
   Edit2, 
   Trash2, 
   ChevronDown, 
-  Clock
+  Clock,
+  LucideIcon
 } from 'lucide-react';
 
 interface JournalSectionProps {
@@ -30,11 +31,11 @@ const JournalSection: React.FC<JournalSectionProps> = ({ entries, isAdmin, onEdi
     setExpandedId(expandedId === id ? null : id);
   };
 
-  const getTypeStyle = (type?: EntryType) => {
+  const getTypeStyle = (type?: EntryType): { Icon: LucideIcon, color: string, bg: string } => {
     switch (type) {
-      case '新闻': return { icon: <Newspaper className="w-5 h-5" />, color: 'text-blue-500', bg: 'bg-blue-500/10' };
-      case '逻辑': return { icon: <Zap className="w-5 h-5" />, color: 'text-amber-500', bg: 'bg-amber-500/10' };
-      default: return { icon: <MessageSquare className="w-5 h-5" />, color: 'text-purple-500', bg: 'bg-purple-500/10' };
+      case '新闻': return { Icon: Newspaper, color: 'text-blue-500', bg: 'bg-blue-500/10' };
+      case '逻辑': return { Icon: Zap, color: 'text-amber-500', bg: 'bg-amber-500/10' };
+      default: return { Icon: MessageSquare, color: 'text-purple-500', bg: 'bg-purple-500/10' };
     }
   };
 
@@ -72,12 +73,13 @@ const JournalSection: React.FC<JournalSectionProps> = ({ entries, isAdmin, onEdi
           filteredEntries.map((entry) => {
             const isExpanded = expandedId === entry.id;
             const style = getTypeStyle(entry.type);
+            const Icon = style.Icon;
             
             return (
               <div key={entry.id} className="relative">
                 {/* Timeline Dot/Icon */}
                 <div className={`absolute -left-[45px] sm:-left-[57px] top-4 w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-500 z-10 ${isExpanded ? 'bg-market-dark dark:bg-amber-500 text-white scale-110 shadow-xl' : 'bg-gray-800/80 text-gray-400 border border-white/5'}`}>
-                   {React.cloneElement(style.icon as React.ReactElement, { className: 'w-4 h-4' })}
+                   <Icon className="w-4 h-4" />
                 </div>
 
                 {/* Collapsible Card */}

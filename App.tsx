@@ -15,7 +15,9 @@ import {
   Zap, 
   Sun, 
   Moon, 
-  TrendingUp
+  TrendingUp,
+  Search,
+  X
 } from 'lucide-react';
 
 const ADMIN_PASSWORD = "8888"; 
@@ -33,6 +35,7 @@ const App: React.FC = () => {
   const [bgImage] = useState(DEFAULT_BG);
   const [sortMode, setSortMode] = useState<SortMode>('category');
   const [logoClicks, setLogoClicks] = useState(0);
+  const [globalSearch, setGlobalSearch] = useState('');
 
   // Form States
   const [showInsightForm, setShowInsightForm] = useState(false);
@@ -62,7 +65,7 @@ const App: React.FC = () => {
         ]);
         setInsights(insData.map((i: any) => ({ ...i, updatedAt: Number(i.updated_at), focusPoints: i.focus_points, entryLevel: i.entry_level, completionStatus: i.completion_status })));
         setJournals(jrData.map((j: any) => ({ ...j, date: Number(j.date) })));
-        setPositions(posData.map((p: any) => ({ ...p, signalTime: Number(p.signal_time), entryPrice: Number(p.entry_price), investedAmount: Number(p.invested_amount), yieldRate: Number(p.yield_rate), yieldAmount: Number(p.yield_amount), updatedAt: Number(p.updated_at), signalType: p.signal_type })));
+        setPositions(posData.map((p: any) => ({ ...p, signalTime: Number(p.signal_time), entryPrice: Number(p.entry_price), invested_amount: Number(p.invested_amount), yield_rate: Number(p.yield_rate), yield_amount: Number(p.yield_amount), updatedAt: Number(p.updated_at), signalType: p.signal_type })));
       } catch (e) { console.error(e); }
     } else {
        setInsights(INITIAL_INSIGHTS);
@@ -71,6 +74,35 @@ const App: React.FC = () => {
   };
 
   useEffect(() => { fetchData(); }, []);
+
+  // Filtered data based on search
+  const filteredInsights = useMemo(() => {
+    if (!globalSearch) return insights;
+    const s = globalSearch.toLowerCase();
+    return insights.filter(i => 
+      i.symbol.toLowerCase().includes(s) || 
+      i.category.toLowerCase().includes(s) || 
+      i.focusPoints.toLowerCase().includes(s)
+    );
+  }, [insights, globalSearch]);
+
+  const filteredJournals = useMemo(() => {
+    if (!globalSearch) return journals;
+    const s = globalSearch.toLowerCase();
+    return journals.filter(j => 
+      (j.title?.toLowerCase().includes(s)) || 
+      j.content.toLowerCase().includes(s)
+    );
+  }, [journals, globalSearch]);
+
+  const filteredPositions = useMemo(() => {
+    if (!globalSearch) return positions;
+    const s = globalSearch.toLowerCase();
+    return positions.filter(p => 
+      p.symbol.toLowerCase().includes(s) || 
+      p.category.toLowerCase().includes(s)
+    );
+  }, [positions, globalSearch]);
 
   const handleToggleAdmin = () => {
     if (!isAdmin) {
@@ -92,7 +124,7 @@ const App: React.FC = () => {
       setLogoClicks(0);
     } else {
       setLogoClicks(nextClicks);
-      setTimeout(() => setLogoClicks(0), 3000); // 3秒内不连续点击则重置
+      setTimeout(() => setLogoClicks(0), 3000); 
     }
   };
 
@@ -179,7 +211,7 @@ const App: React.FC = () => {
             <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center text-white shadow-lg group-hover:bg-amber-600 transition-colors">
               <TrendingUp className="w-5 h-5" />
             </div>
-            <h1 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tighter">Market Weekly</h1>
+            <h1 className="hidden sm:block text-sm font-black text-gray-900 dark:text-white uppercase tracking-tighter">Market Weekly</h1>
           </button>
 
           <nav className="flex items-center gap-1.5 bg-black/5 dark:bg-white/5 p-1 rounded-full">
@@ -193,12 +225,31 @@ const App: React.FC = () => {
                 onClick={() => setSortMode(tab.id as any)}
                 className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-[12px] font-black transition-all ${sortMode === tab.id ? 'bg-market-dark text-white shadow-xl dark:bg-amber-500' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}
               >
-                {tab.icon} <span>{tab.label}</span>
+                {tab.icon} <span className="hidden sm:inline">{tab.label}</span>
               </button>
             ))}
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+             {/* Global Search Bar */}
+             <div className="relative flex items-center">
+                <div className={`flex items-center bg-black/5 dark:bg-white/10 rounded-full px-4 py-2 transition-all duration-500 border border-transparent focus-within:border-amber-500/50 focus-within:bg-white dark:focus-within:bg-black/40 ${globalSearch ? 'w-48 sm:w-64' : 'w-10 sm:w-48'}`}>
+                   <Search className={`w-4 h-4 shrink-0 ${globalSearch ? 'text-amber-500' : 'text-gray-400'}`} />
+                   <input 
+                     type="text"
+                     placeholder="搜索..."
+                     className={`bg-transparent outline-none text-[12px] font-bold dark:text-white transition-all duration-500 ml-2 w-full ${!globalSearch && 'sm:opacity-100 opacity-0 pointer-events-none sm:pointer-events-auto'}`}
+                     value={globalSearch}
+                     onChange={(e) => setGlobalSearch(e.target.value)}
+                   />
+                   {globalSearch && (
+                     <button onClick={() => setGlobalSearch('')} className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-full">
+                       <X className="w-3 h-3 text-gray-400" />
+                     </button>
+                   )}
+                </div>
+             </div>
+
              <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2.5 text-gray-400 hover:text-amber-500 transition-colors">
                {isDarkMode ? <Sun className="w-4.5 h-4.5" /> : <Moon className="w-4.5 h-4.5" />}
              </button>
@@ -215,7 +266,7 @@ const App: React.FC = () => {
           <div className="animate-in fade-in duration-700 slide-in-from-bottom-5">
             {sortMode === 'category' && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {insights.map(i => (
+                {filteredInsights.map(i => (
                   <MarketCard 
                     key={i.id} 
                     insight={i} 
@@ -225,7 +276,7 @@ const App: React.FC = () => {
                     isEditable={isAdmin} 
                   />
                 ))}
-                {isAdmin && (
+                {isAdmin && !globalSearch && (
                   <button 
                     onClick={handleOpenAddForm}
                     className="bg-white/5 border-4 border-dashed border-white/10 rounded-[3rem] h-full min-h-[460px] flex flex-col items-center justify-center group hover:border-amber-500/40 transition-all backdrop-blur-sm"
@@ -234,12 +285,17 @@ const App: React.FC = () => {
                     <span className="text-sm font-black text-white/20 mt-4 group-hover:text-white uppercase tracking-widest">New Probe</span>
                   </button>
                 )}
+                {filteredInsights.length === 0 && globalSearch && (
+                  <div className="col-span-full py-40 text-center opacity-20 italic font-black text-3xl text-white tracking-tighter">
+                    No matching insights found
+                  </div>
+                )}
               </div>
             )}
 
             {sortMode === 'journal' && (
               <JournalSection 
-                entries={journals} 
+                entries={filteredJournals} 
                 isAdmin={isAdmin} 
                 onEdit={(entry) => { setEditingJournal(entry); setShowJournalForm(true); }} 
                 onDelete={handleDeleteJournal} 
@@ -248,7 +304,7 @@ const App: React.FC = () => {
             
             {sortMode === 'positions' && (
               <PositionSection 
-                positions={positions} 
+                positions={filteredPositions} 
                 isAdmin={isAdmin} 
                 onEdit={(pos) => { setEditingPosition(pos); setShowPositionForm(true); }} 
                 onDelete={handleDeletePosition} 

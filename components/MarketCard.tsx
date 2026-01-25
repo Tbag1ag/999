@@ -21,19 +21,12 @@ const MarketCard: React.FC<MarketCardProps> = ({ insight, onEdit, onDelete, isEd
   const isCompleted = insight.completionStatus === '已完成';
   const isExpired = insight.completionStatus === '已失效';
   
-  // If explicitly in archived section, or its status is completed/expired, it should look archived
   const effectiveArchived = isArchived || isCompleted || isExpired;
 
   const handleCardClick = (e: React.MouseEvent) => {
     if (effectiveArchived) {
       setIsRevealed(true);
-      
-      // Clear existing timer if any
-      if (revealTimer.current) {
-        window.clearTimeout(revealTimer.current);
-      }
-      
-      // Set 5s auto-reset
+      if (revealTimer.current) window.clearTimeout(revealTimer.current);
       revealTimer.current = window.setTimeout(() => {
         setIsRevealed(false);
         revealTimer.current = null;
@@ -52,88 +45,67 @@ const MarketCard: React.FC<MarketCardProps> = ({ insight, onEdit, onDelete, isEd
   return (
     <div 
       onClick={handleCardClick}
-      className={`group relative bg-glass rounded-[3.5rem] p-10 sm:p-12 flex flex-col min-h-[540px] transition-all duration-700 ${effectiveArchived ? 'cursor-help' : isEditable ? 'cursor-pointer hover:-translate-y-2' : 'hover:-translate-y-1.5'} overflow-hidden`}
+      className={`group relative bg-glass rounded-[2.5rem] sm:rounded-[3.5rem] p-7 sm:p-12 flex flex-col min-h-[440px] sm:min-h-[540px] transition-all duration-700 ${effectiveArchived ? 'cursor-help' : isEditable ? 'cursor-pointer hover:-translate-y-2' : 'hover:-translate-y-1.5'} overflow-hidden`}
     >
-      {/* Admin Mode Badge */}
       {isEditable && !effectiveArchived && (
-        <div className="absolute top-10 right-10 flex items-center gap-2 px-4 py-1.5 bg-amber-500 text-white rounded-full text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity z-20 shadow-lg">
-          <Edit3 className="w-3 h-3" /> 编辑模式
+        <div className="absolute top-6 right-6 sm:top-10 sm:right-10 flex items-center gap-2 px-3 py-1 bg-amber-500 text-white rounded-full text-[9px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity z-20 shadow-lg">
+          <Edit3 className="w-3 h-3" /> 编辑
         </div>
       )}
 
-      {/* Completed Stamp (Seal) - Fade out when revealed */}
       {effectiveArchived && (
         <div className={`absolute inset-0 flex items-center justify-center pointer-events-none z-10 transition-all duration-500 ${isRevealed ? 'opacity-0 scale-150' : 'opacity-80 scale-100'}`}>
-           <div className="w-52 h-52 border-[6px] border-emerald-400 rounded-full flex items-center justify-center -rotate-[15deg] shadow-[0_0_40px_rgba(52,211,153,0.2)]">
-              <Check className="w-32 h-32 text-emerald-400 stroke-[3px]" />
+           <div className="w-40 h-40 sm:w-52 sm:h-52 border-[4px] sm:border-[6px] border-emerald-400 rounded-full flex items-center justify-center -rotate-[15deg] shadow-[0_0_40px_rgba(52,211,153,0.2)]">
+              <Check className="w-24 h-24 sm:w-32 sm:h-32 text-emerald-400 stroke-[3px]" />
            </div>
         </div>
       )}
 
-      {/* Main Content Wrapper - Blurred if completed and NOT revealed */}
       <div className={`flex flex-col flex-grow transition-all duration-700 ${effectiveArchived && !isRevealed ? 'blur-[12px] opacity-20 scale-[0.98]' : 'blur-0 opacity-100 scale-100'}`}>
-        {/* Header: Large Bold Symbol */}
-        <div className="mb-10">
-          <h3 className="text-6xl font-[900] text-[#000000] dark:text-white tracking-tighter uppercase italic leading-none opacity-90 mb-5">{insight.symbol}</h3>
-          <div className={`inline-flex items-center gap-1.5 px-5 py-2 rounded-full text-[11px] font-black uppercase tracking-widest shadow-sm ${isUp ? 'bg-emerald-500 text-white' : isDown ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'}`}>
-             {isUp ? <TrendingUp className="w-3.5 h-3.5" /> : isDown ? <TrendingDown className="w-3.5 h-3.5" /> : <Activity className="w-3.5 h-3.5" />}
+        <div className="mb-6 sm:mb-10">
+          <h3 className="text-4xl sm:text-6xl font-[900] text-[#000000] dark:text-white tracking-tighter uppercase italic leading-none opacity-90 mb-4 sm:mb-5">
+            {insight.symbol}
+          </h3>
+          <div className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm ${isUp ? 'bg-emerald-500 text-white' : isDown ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'}`}>
+             {isUp ? <TrendingUp className="w-3 h-3" /> : isDown ? <TrendingDown className="w-3 h-3" /> : <Activity className="w-3 h-3" />}
              {insight.status}
           </div>
         </div>
 
-        {/* Content Section */}
-        <div className="mb-12">
-          <p className="text-[21px] font-black text-[#000000] dark:text-white/95 leading-[1.6] tracking-tight">
+        <div className="mb-8 sm:mb-12">
+          <p className="text-[17px] sm:text-[21px] font-black text-[#000000] dark:text-white/95 leading-[1.6] tracking-tight">
             {insight.focusPoints}
           </p>
         </div>
 
-        {/* Strategy Section */}
         <div className="flex-grow flex flex-col justify-end">
-          <div className="strategy-box p-8">
-             <p className="text-[17px] font-black text-[#000000] dark:text-white/90 leading-relaxed">
+          <div className="strategy-box p-6 sm:p-8">
+             <p className="text-[14px] sm:text-[17px] font-black text-[#000000] dark:text-white/90 leading-relaxed">
                {insight.strategy}
              </p>
           </div>
         </div>
       </div>
 
-      {/* Footer: Stays clear even if completed */}
-      <div className={`mt-12 pt-8 border-t border-black/5 flex items-center justify-between relative z-20 transition-opacity duration-700 ${effectiveArchived && !isRevealed ? 'opacity-30' : 'opacity-100'}`}>
-         <div className="flex items-center gap-4">
-            <span className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest ${isCompleted ? 'bg-emerald-500/10 text-emerald-600' : isExpired ? 'bg-red-500/10 text-red-600' : 'bg-black/10 dark:bg-white/10 text-[#000000] dark:text-gray-300'}`}>
+      <div className={`mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-black/5 flex items-center justify-between relative z-20 transition-opacity duration-700 ${effectiveArchived && !isRevealed ? 'opacity-30' : 'opacity-100'}`}>
+         <div className="flex items-center gap-3 sm:gap-4">
+            <span className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest ${isCompleted ? 'bg-emerald-500/10 text-emerald-600' : isExpired ? 'bg-red-500/10 text-red-600' : 'bg-black/10 dark:bg-white/10 text-[#000000] dark:text-gray-300'}`}>
               {isCompleted ? '已结案' : isExpired ? '已失效' : insight.category}
             </span>
-            <div className="flex items-center gap-2 text-[10px] font-black text-[#000000] dark:text-white/60 uppercase tracking-widest">
-              <Clock className="w-3.5 h-3.5" />
-              {new Date(insight.updatedAt).toLocaleDateString('zh-CN', { year: 'numeric', month: 'numeric', day: 'numeric' })}
+            <div className="flex items-center gap-1.5 text-[9px] font-black text-[#000000] dark:text-white/40 uppercase tracking-widest">
+              <Clock className="w-3 h-3" />
+              {new Date(insight.updatedAt).toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' })}
             </div>
          </div>
          
          {isEditable && (
            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button 
-                onClick={(e) => { e.stopPropagation(); onEdit(insight); }} 
-                className="p-3 bg-white/20 hover:bg-amber-500 hover:text-white rounded-2xl text-gray-800 dark:text-gray-200 transition-all shadow-sm"
-              >
-                <Edit2 className="w-4 h-4" />
-              </button>
-              <button 
-                onClick={(e) => { e.stopPropagation(); onDelete(insight.id); }} 
-                className="p-3 bg-white/20 hover:bg-red-500 hover:text-white rounded-2xl text-gray-800 dark:text-gray-200 transition-all shadow-sm"
-              >
-                <Trash2 className="w-4 h-4" />
+              <button onClick={(e) => { e.stopPropagation(); onEdit(insight); }} className="p-2.5 bg-white/20 hover:bg-amber-500 hover:text-white rounded-xl text-gray-800 transition-all shadow-sm">
+                <Edit2 className="w-3.5 h-3.5" />
               </button>
            </div>
          )}
       </div>
-
-      {/* Hint for archived cards */}
-      {effectiveArchived && !isRevealed && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-[9px] font-black uppercase tracking-[0.3em] text-white/20 animate-pulse">
-           Tap to Peek
-        </div>
-      )}
     </div>
   );
 };

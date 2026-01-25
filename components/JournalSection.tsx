@@ -41,7 +41,7 @@ const JournalSection: React.FC<JournalSectionProps> = ({ entries, isAdmin, onEdi
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6">
-      {/* Top Filter Bar - More Compact */}
+      {/* Top Filter Bar - Consistent with the app's stadium design */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-12">
         <div className="flex stadium-nav p-1 gap-1">
           {['全部', '随笔', '新闻', '逻辑'].map((t) => (
@@ -63,7 +63,7 @@ const JournalSection: React.FC<JournalSectionProps> = ({ entries, isAdmin, onEdi
         </div>
       </div>
 
-      {/* Intelligence List - Thinner cards & Tight layout */}
+      {/* Intelligence List - Using bg-glass for consistency */}
       <div className="relative pl-10 sm:pl-16 border-l border-white/5 space-y-4 pb-32">
         {filteredEntries.length === 0 ? (
           <div className="py-40 text-center opacity-10 italic font-black text-4xl text-white tracking-tighter">
@@ -77,51 +77,52 @@ const JournalSection: React.FC<JournalSectionProps> = ({ entries, isAdmin, onEdi
             
             return (
               <div key={entry.id} className="relative group/item">
-                {/* Timeline Icon - Smaller & Sleeker */}
+                {/* Timeline Icon - Perfectly centered on the line */}
                 <div className={`absolute -left-[61px] sm:-left-[89px] top-4 w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-500 z-10 border-2 border-[#0d1117] ${isExpanded ? 'bg-amber-500 text-white scale-110' : 'bg-[#1a1d26] text-gray-500'}`}>
                    <Icon className="w-4 h-4" />
                 </div>
 
-                {/* Card - "Thin Pill" shape */}
+                {/* Card - Now using bg-glass for the same translucent look as Insights */}
                 <div 
-                  className={`bg-white/85 dark:bg-white/10 backdrop-blur-[60px] rounded-[2.5rem] overflow-hidden transition-all duration-500 border border-white/5 ${isExpanded ? 'shadow-2xl' : 'cursor-pointer hover:bg-white/95 dark:hover:bg-white/15'}`}
+                  className={`bg-glass rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden transition-all duration-700 ${isExpanded ? 'shadow-2xl translate-x-1' : 'cursor-pointer hover:bg-white/20 dark:hover:bg-white/5'}`}
                   onClick={() => !isExpanded && toggleExpand(entry.id)}
                 >
-                  <div className="px-8 py-5 flex flex-col items-start gap-2">
-                    <div className="flex items-center gap-4">
-                       <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${style.badgeBg} ${style.color}`}>
+                  <div className="px-8 py-5 flex flex-col items-start gap-1">
+                    <div className="flex items-center gap-4 mb-1">
+                       <span className={`px-2.5 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest ${style.badgeBg} ${style.color}`}>
                          {entry.type}
                        </span>
-                       <div className="flex items-center gap-1.5 text-[10px] font-black text-black/40 dark:text-white/30 uppercase tracking-widest">
+                       <div className="flex items-center gap-1.5 text-[10px] font-black text-[#000000]/40 dark:text-white/30 uppercase tracking-widest">
                          <Clock className="w-3.5 h-3.5" />
                          {new Date(entry.date).toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' })}
                        </div>
                     </div>
 
                     <div className="flex items-center justify-between w-full gap-6">
-                      <h3 className={`text-xl sm:text-2xl font-black tracking-tight leading-snug text-[#000000] dark:text-white group-hover/item:text-amber-500 transition-colors duration-500`}>
+                      <h3 className={`text-lg sm:text-2xl font-black tracking-tighter leading-snug text-[#000000] dark:text-white group-hover/item:text-amber-500 transition-colors duration-500`}>
                         {entry.title || "Untitled Signal"}
                       </h3>
                       <button 
                         onClick={(e) => { e.stopPropagation(); toggleExpand(entry.id); }}
                         className={`p-1.5 rounded-xl bg-black/5 dark:bg-white/5 transition-all duration-700 ${isExpanded ? 'rotate-180 bg-amber-500 text-white' : 'text-gray-400'}`}
                       >
-                         <ChevronDown className="w-6 h-6" />
+                         <ChevronDown className="w-5 h-5" />
                       </button>
                     </div>
                   </div>
 
+                  {/* Expanded Content Section */}
                   <div 
-                    className={`transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isExpanded ? 'max-h-[3000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}
+                    className={`transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}
                   >
                     <div className="px-8 pb-10 pt-4 border-t border-black/5 dark:border-white/5">
                       <div className="prose dark:prose-invert max-w-none">
-                        <p className="text-[16px] sm:text-[17px] text-[#000000] dark:text-white/80 leading-relaxed font-bold whitespace-pre-wrap tracking-tight">
+                        <p className="text-[15px] sm:text-[17px] text-[#000000] dark:text-white/80 leading-relaxed font-bold whitespace-pre-wrap tracking-tight">
                           {entry.content}
                         </p>
                       </div>
 
-                      <div className="mt-8 flex items-center justify-between gap-4">
+                      <div className="mt-10 flex items-center justify-between gap-4">
                          {entry.source && (
                            <a 
                              href={entry.source} 
@@ -137,7 +138,7 @@ const JournalSection: React.FC<JournalSectionProps> = ({ entries, isAdmin, onEdi
                            <div className="flex gap-2">
                              <button 
                                onClick={(e) => { e.stopPropagation(); onEdit(entry); }} 
-                               className="px-4 py-2.5 bg-black/5 dark:bg-white/5 text-[10px] font-black text-gray-500 hover:text-black dark:hover:text-white rounded-xl transition-all"
+                               className="px-4 py-2.5 bg-black/5 dark:bg-white/5 text-[10px] font-black text-[#000000]/40 dark:text-white/40 hover:text-amber-500 dark:hover:text-white rounded-xl transition-all"
                              >
                                EDIT
                              </button>

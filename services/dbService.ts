@@ -10,6 +10,7 @@ export const initDatabase = async () => {
   if (!sql) return;
   
   try {
+    // 基础表创建
     await sql`
       CREATE TABLE IF NOT EXISTS insights (
         id TEXT PRIMARY KEY,
@@ -35,17 +36,6 @@ export const initDatabase = async () => {
         date BIGINT
       );
     `;
-    
-    await sql`
-      CREATE TABLE IF NOT EXISTS indices (
-        id TEXT PRIMARY KEY,
-        symbol TEXT NOT NULL,
-        score INTEGER NOT NULL,
-        title TEXT,
-        description TEXT,
-        updated_at BIGINT
-      );
-    `;
 
     await sql`
       CREATE TABLE IF NOT EXISTS positions (
@@ -63,6 +53,17 @@ export const initDatabase = async () => {
         updated_at BIGINT
       );
     `;
+
+    // 增量补全逻辑：如果表已存在但缺失列，手动添加
+    // PostgreSQL 不支持一条语句添加多个带 IF NOT EXISTS 的列，所以分开写
+    try {
+      await sql`ALTER TABLE positions ADD COLUMN IF NOT EXISTS shares DOUBLE PRECISION DEFAULT 1`;
+      await sql`ALTER TABLE positions ADD COLUMN IF NOT EXISTS yield_rate DOUBLE PRECISION DEFAULT 0`;
+      await sql`ALTER TABLE positions ADD COLUMN IF NOT EXISTS yield_amount DOUBLE PRECISION DEFAULT 0`;
+      await sql`ALTER TABLE positions ADD COLUMN IF NOT EXISTS category TEXT DEFAULT '美股'`;
+    } catch (e) {
+      console.warn("增量更新列失败（可能列已存在）:", e);
+    }
     
     await sql`
       CREATE TABLE IF NOT EXISTS notifications (

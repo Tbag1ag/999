@@ -17,7 +17,8 @@ import {
   Moon, 
   TrendingUp,
   Search,
-  X
+  X,
+  Archive
 } from 'lucide-react';
 
 const ADMIN_PASSWORD = "8888"; 
@@ -65,7 +66,8 @@ const App: React.FC = () => {
         ]);
         setInsights(insData.map((i: any) => ({ ...i, updatedAt: Number(i.updated_at), focusPoints: i.focus_points, entryLevel: i.entry_level, completionStatus: i.completion_status })));
         setJournals(jrData.map((j: any) => ({ ...j, date: Number(j.date) })));
-        setPositions(posData.map((p: any) => ({ ...p, signalTime: Number(p.signal_time), entryPrice: Number(p.entry_price), invested_amount: Number(p.invested_amount), yield_rate: Number(p.yield_rate), yield_amount: Number(p.yield_amount), updatedAt: Number(p.updated_at), signalType: p.signal_type })));
+        // Fix: Correct property names in mapping for investedAmount, yieldRate, and yieldAmount to match PositionEntry interface
+        setPositions(posData.map((p: any) => ({ ...p, signalTime: Number(p.signal_time), entryPrice: Number(p.entry_price), investedAmount: Number(p.invested_amount), yieldRate: Number(p.yield_rate), yieldAmount: Number(p.yield_amount), updatedAt: Number(p.updated_at), signalType: p.signal_type })));
       } catch (e) { console.error(e); }
     } else {
        setInsights(INITIAL_INSIGHTS);
@@ -75,15 +77,20 @@ const App: React.FC = () => {
 
   useEffect(() => { fetchData(); }, []);
 
-  // Filtered data based on search
-  const filteredInsights = useMemo(() => {
-    if (!globalSearch) return insights;
-    const s = globalSearch.toLowerCase();
-    return insights.filter(i => 
-      i.symbol.toLowerCase().includes(s) || 
-      i.category.toLowerCase().includes(s) || 
-      i.focusPoints.toLowerCase().includes(s)
-    );
+  // Filtered and Split Insights
+  const { activeInsights, archivedInsights } = useMemo(() => {
+    const searchFiltered = !globalSearch 
+      ? insights 
+      : insights.filter(i => 
+          i.symbol.toLowerCase().includes(globalSearch.toLowerCase()) || 
+          i.category.toLowerCase().includes(globalSearch.toLowerCase()) || 
+          i.focusPoints.toLowerCase().includes(globalSearch.toLowerCase())
+        );
+
+    return {
+      activeInsights: searchFiltered.filter(i => i.completionStatus === '进行中'),
+      archivedInsights: searchFiltered.filter(i => i.completionStatus !== '进行中')
+    };
   }, [insights, globalSearch]);
 
   const filteredJournals = useMemo(() => {
@@ -136,6 +143,7 @@ const App: React.FC = () => {
       if (editingInsight) {
         await sql`UPDATE insights SET symbol=${finalData.symbol}, category=${finalData.category}, status=${finalData.status}, focus_points=${finalData.focusPoints}, strategy=${finalData.strategy}, entry_level=${finalData.entryLevel}, updated_at=${finalData.updatedAt}, completion_status=${finalData.completionStatus} WHERE id=${id}`;
       } else {
+        // Fix: Correct camelCase property names from finalData (focusPoints, entryLevel)
         await sql`INSERT INTO insights (id, symbol, category, status, focus_points, strategy, entry_level, updated_at, completion_status) VALUES (${id}, ${finalData.symbol}, ${finalData.category}, ${finalData.status}, ${finalData.focusPoints}, ${finalData.strategy}, ${finalData.entryLevel}, ${finalData.updatedAt}, ${finalData.completionStatus})`;
       }
       setShowInsightForm(false);
@@ -176,8 +184,10 @@ const App: React.FC = () => {
     const finalData = { ...data, id, updatedAt: Date.now() };
     try {
       if (editingPosition) {
+        // Fix: Correct camelCase property names (entryPrice, investedAmount, yieldRate, yieldAmount) from finalData
         await sql`UPDATE positions SET symbol=${finalData.symbol}, category=${finalData.category}, signal_type=${finalData.signalType}, side=${finalData.side}, status=${finalData.status}, signal_time=${finalData.signalTime}, entry_price=${finalData.entryPrice}, invested_amount=${finalData.investedAmount}, yield_rate=${finalData.yieldRate}, yield_amount=${finalData.yieldAmount}, updated_at=${finalData.updatedAt} WHERE id=${id}`;
       } else {
+        // Fix: Correct camelCase property names (entryPrice, investedAmount, yieldRate, yieldAmount) from finalData
         await sql`INSERT INTO positions (id, symbol, category, signal_type, side, status, signal_time, entry_price, invested_amount, yield_rate, yield_amount, updated_at) VALUES (${id}, ${finalData.symbol}, ${finalData.category}, ${finalData.signalType}, ${finalData.side}, ${finalData.status}, ${finalData.signalTime}, ${finalData.entryPrice}, ${finalData.investedAmount}, ${finalData.yieldRate}, ${finalData.yieldAmount}, ${finalData.updatedAt})`;
       }
       setShowPositionForm(false);
@@ -211,7 +221,7 @@ const App: React.FC = () => {
             <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center text-white shadow-lg group-hover:bg-amber-600 transition-colors">
               <TrendingUp className="w-5 h-5" />
             </div>
-            <h1 className="hidden sm:block text-sm font-black text-gray-900 dark:text-white uppercase tracking-tighter">Market Weekly</h1>
+            <h1 className="hidden sm:block text-sm font-black text-gray-900 dark:text-white uppercase tracking-tighter">市场周刊V2.0</h1>
           </button>
 
           <nav className="flex items-center gap-1.5 bg-black/5 dark:bg-white/5 p-1 rounded-full">
@@ -231,7 +241,6 @@ const App: React.FC = () => {
           </nav>
 
           <div className="flex items-center gap-2">
-             {/* Global Search Bar */}
              <div className="relative flex items-center">
                 <div className={`flex items-center bg-black/5 dark:bg-white/10 rounded-full px-4 py-2 transition-all duration-500 border border-transparent focus-within:border-amber-500/50 focus-within:bg-white dark:focus-within:bg-black/40 ${globalSearch ? 'w-48 sm:w-64' : 'w-10 sm:w-48'}`}>
                    <Search className={`w-4 h-4 shrink-0 ${globalSearch ? 'text-amber-500' : 'text-gray-400'}`} />
@@ -265,28 +274,55 @@ const App: React.FC = () => {
         ) : (
           <div className="animate-in fade-in duration-700 slide-in-from-bottom-5">
             {sortMode === 'category' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {filteredInsights.map(i => (
-                  <MarketCard 
-                    key={i.id} 
-                    insight={i} 
-                    onEdit={(ins) => { setEditingInsight(ins); setShowInsightForm(true); }} 
-                    onDelete={handleDeleteInsight} 
-                    onToggleCompletion={() => {}} 
-                    isEditable={isAdmin} 
-                  />
-                ))}
-                {isAdmin && !globalSearch && (
-                  <button 
-                    onClick={handleOpenAddForm}
-                    className="bg-white/5 border-4 border-dashed border-white/10 rounded-[3rem] h-full min-h-[460px] flex flex-col items-center justify-center group hover:border-amber-500/40 transition-all backdrop-blur-sm"
-                  >
-                    <Plus className="w-10 h-10 text-white/20 group-hover:text-white transition-all" />
-                    <span className="text-sm font-black text-white/20 mt-4 group-hover:text-white uppercase tracking-widest">New Probe</span>
-                  </button>
+              <div className="space-y-24">
+                {/* Active Section */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {activeInsights.map(i => (
+                    <MarketCard 
+                      key={i.id} 
+                      insight={i} 
+                      onEdit={(ins) => { setEditingInsight(ins); setShowInsightForm(true); }} 
+                      onDelete={handleDeleteInsight} 
+                      onToggleCompletion={() => {}} 
+                      isEditable={isAdmin} 
+                    />
+                  ))}
+                  {isAdmin && !globalSearch && (
+                    <button 
+                      onClick={handleOpenAddForm}
+                      className="bg-white/5 border-4 border-dashed border-white/10 rounded-[3rem] h-full min-h-[540px] flex flex-col items-center justify-center group hover:border-amber-500/40 transition-all backdrop-blur-sm"
+                    >
+                      <Plus className="w-10 h-10 text-white/20 group-hover:text-white transition-all" />
+                      <span className="text-sm font-black text-white/20 mt-4 group-hover:text-white uppercase tracking-widest">New Probe</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Archived Section */}
+                {archivedInsights.length > 0 && (
+                  <div className="pt-20 border-t border-white/5">
+                    <div className="flex items-center gap-3 mb-12">
+                      <Archive className="w-6 h-6 text-emerald-400/50" />
+                      <h2 className="text-xl font-black text-white/30 uppercase tracking-[0.4em]">已归档洞察 ARCHIVED</h2>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                      {archivedInsights.map(i => (
+                        <MarketCard 
+                          key={i.id} 
+                          insight={i} 
+                          onEdit={(ins) => { setEditingInsight(ins); setShowInsightForm(true); }} 
+                          onDelete={handleDeleteInsight} 
+                          onToggleCompletion={() => {}} 
+                          isEditable={isAdmin} 
+                          isArchived={true}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 )}
-                {filteredInsights.length === 0 && globalSearch && (
-                  <div className="col-span-full py-40 text-center opacity-20 italic font-black text-3xl text-white tracking-tighter">
+
+                {activeInsights.length === 0 && archivedInsights.length === 0 && globalSearch && (
+                  <div className="py-40 text-center opacity-20 italic font-black text-3xl text-white tracking-tighter">
                     No matching insights found
                   </div>
                 )}

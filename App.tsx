@@ -125,6 +125,7 @@ const App: React.FC = () => {
     
     try {
       if (editingPosition) {
+        // Correcting property names from snake_case to camelCase to match PositionEntry type used in finalData
         await sql`UPDATE positions SET symbol=${finalData.symbol}, category=${finalData.category}, signal_type=${finalData.signalType}, side=${finalData.side}, status=${finalData.status}, signal_time=${finalData.signalTime}, entry_price=${finalData.entryPrice}, invested_amount=${finalData.investedAmount}, yield_rate=${finalData.yieldRate}, yield_amount=${finalData.yieldAmount}, updated_at=${finalData.updatedAt} WHERE id=${id}`;
       } else {
         await sql`INSERT INTO positions (id, symbol, category, signal_type, side, status, signal_time, entry_price, invested_amount, yield_rate, yield_amount, updated_at) VALUES (${id}, ${finalData.symbol}, ${finalData.category}, ${finalData.signalType}, ${finalData.side}, ${finalData.status}, ${finalData.signalTime}, ${finalData.entryPrice}, ${finalData.investedAmount}, ${finalData.yieldRate}, ${finalData.yieldAmount}, ${finalData.updatedAt})`;
@@ -219,7 +220,7 @@ const App: React.FC = () => {
         ) : (
           <div className="animate-in fade-in duration-700 slide-in-from-bottom-5">
             {sortMode === 'category' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {insights.map(i => (
                   <MarketCard 
                     key={i.id} 
@@ -233,10 +234,10 @@ const App: React.FC = () => {
                 {isAdmin && (
                   <button 
                     onClick={handleOpenAddForm}
-                    className="bg-white/10 border-4 border-dashed border-white/20 rounded-[3.5rem] h-full min-h-[500px] flex flex-col items-center justify-center group hover:border-amber-500/40 transition-all backdrop-blur-sm"
+                    className="bg-white/10 border-4 border-dashed border-white/20 rounded-[3rem] h-full min-h-[460px] flex flex-col items-center justify-center group hover:border-amber-500/40 transition-all backdrop-blur-sm"
                   >
-                    <Plus className="w-12 h-12 text-white/30 group-hover:text-white transition-all" />
-                    <span className="text-lg font-black text-white/30 mt-6 group-hover:text-white uppercase tracking-widest">Deploy New Probe</span>
+                    <Plus className="w-10 h-10 text-white/30 group-hover:text-white transition-all" />
+                    <span className="text-sm font-black text-white/30 mt-4 group-hover:text-white uppercase tracking-widest">New Probe</span>
                   </button>
                 )}
               </div>
@@ -265,8 +266,8 @@ const App: React.FC = () => {
 
       {isAdmin && (
         <div className="fixed bottom-10 right-10 z-[110]">
-           <button onClick={handleOpenAddForm} className="w-20 h-20 bg-market-dark dark:bg-amber-500 text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 active:scale-90 transition-all">
-             <Plus className="w-10 h-10" />
+           <button onClick={handleOpenAddForm} className="w-16 h-16 bg-market-dark dark:bg-amber-500 text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all">
+             <Plus className="w-8 h-8" />
            </button>
         </div>
       )}

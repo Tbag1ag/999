@@ -78,13 +78,13 @@ const JournalSection: React.FC<JournalSectionProps> = ({ entries, isAdmin, onEdi
             return (
               <div key={entry.id} className="relative">
                 {/* Timeline Dot/Icon */}
-                <div className={`absolute -left-[45px] sm:-left-[61px] top-4 w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 z-10 ${isExpanded ? 'bg-amber-500 text-white scale-110 shadow-lg shadow-amber-500/20' : 'bg-gray-800 text-gray-400 border border-white/5'}`}>
+                <div className={`absolute -left-[45px] sm:-left-[61px] top-4 w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 z-10 ${isExpanded ? 'bg-market-dark dark:bg-amber-500 text-white scale-110 shadow-lg' : 'bg-gray-800 text-gray-400 border border-white/5'}`}>
                    {style.icon}
                 </div>
 
                 {/* Collapsible Card */}
                 <div 
-                  className={`bg-glass rounded-[2.5rem] overflow-hidden transition-all duration-500 border-2 ${isExpanded ? 'border-amber-500/30 ring-1 ring-amber-500/10' : 'border-transparent hover:border-white/10'}`}
+                  className={`bg-glass rounded-[2.5rem] overflow-hidden transition-all duration-500 border-2 ${isExpanded ? 'border-amber-500/30 ring-1 ring-amber-500/10 shadow-2xl' : 'border-transparent hover:border-white/10'}`}
                 >
                   <div 
                     onClick={() => toggleExpand(entry.id)}
@@ -101,22 +101,22 @@ const JournalSection: React.FC<JournalSectionProps> = ({ entries, isAdmin, onEdi
                     </div>
 
                     <div className="flex items-center justify-between w-full gap-6">
-                      <h3 className={`text-2xl sm:text-3xl font-black tracking-tight leading-tight transition-colors ${isExpanded ? 'text-amber-500' : 'text-[#12141c] dark:text-white'}`}>
+                      <h3 className={`text-2xl sm:text-3xl font-black tracking-tighter leading-tight transition-colors text-[#12141c] dark:text-white`}>
                         {entry.title || "未命名简报"}
                       </h3>
                       <div className={`transition-transform duration-500 ${isExpanded ? 'rotate-180' : ''}`}>
-                         <ChevronDown className={`w-8 h-8 ${isExpanded ? 'text-amber-500' : 'text-gray-300'}`} />
+                         <ChevronDown className={`w-8 h-8 ${isExpanded ? 'text-market-dark dark:text-amber-500' : 'text-gray-300'}`} />
                       </div>
                     </div>
                   </div>
 
                   {/* Expandable Content Area */}
                   <div 
-                    className={`transition-all duration-500 ease-in-out ${isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}
+                    className={`transition-all duration-500 ease-in-out ${isExpanded ? 'max-h-[3000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}
                   >
                     <div className="px-10 pb-12 pt-4 border-t border-black/5 dark:border-white/5">
                       <div className="prose prose-invert max-w-none">
-                        <p className="text-[17px] sm:text-[18px] text-gray-600 dark:text-gray-300 leading-relaxed font-medium whitespace-pre-wrap">
+                        <p className="text-[18px] sm:text-[20px] text-black dark:text-white leading-relaxed font-black whitespace-pre-wrap italic-none">
                           {entry.content}
                         </p>
                       </div>

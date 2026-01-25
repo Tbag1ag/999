@@ -218,37 +218,34 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
     <div className="w-full max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: '总资产 (Equity)', value: `$${stats.totalEquity.toLocaleString()}` },
-          { label: '日收益率 (Daily)', value: `${stats.dailyReturnRate.toFixed(2)}%` },
-          { label: '月收益率 (Monthly)', value: `${stats.monthlyReturnRate.toFixed(2)}%` },
-          { label: '总收益率 (ROI)', value: `${stats.totalReturnRate.toFixed(2)}%`, highlight: true }
+          { label: '总资产 (Equity)', value: `$${stats.totalEquity.toLocaleString()}`, color: 'text-black dark:text-white' },
+          { label: '日收益率 (Daily)', value: `${stats.dailyReturnRate.toFixed(2)}%`, color: stats.dailyReturnRate >= 0 ? 'text-emerald-500' : 'text-red-500' },
+          { label: '月收益率 (Monthly)', value: `${stats.monthlyReturnRate.toFixed(2)}%`, color: stats.monthlyReturnRate >= 0 ? 'text-emerald-500' : 'text-red-500' },
+          { label: '总收益率 (ROI)', value: `${stats.totalReturnRate.toFixed(2)}%`, color: stats.totalReturnRate >= 0 ? 'text-emerald-500' : 'text-red-500' }
         ].map((item, i) => (
           <div key={i} className="bg-glass p-6 sm:p-10 border border-white/10 flex flex-col justify-center">
             <p className="text-[9px] font-black text-black/50 dark:text-white/50 uppercase tracking-[0.2em] mb-1">{item.label}</p>
-            <p className={`text-xl sm:text-4xl font-[900] truncate ${item.highlight ? (stats.totalReturnRate >= 0 ? 'text-emerald-500' : 'text-red-500') : 'text-black dark:text-white'}`}>
+            <p className={`text-xl sm:text-4xl font-[900] truncate ${item.color}`}>
               {item.value}
             </p>
           </div>
         ))}
       </div>
 
-      {/* 过滤器：移除药丸背景，改为文字下划线 */}
-      <div className="flex items-center justify-between border-b border-black/10 dark:border-white/5">
-        <div className="flex gap-2 overflow-x-auto no-scrollbar">
+      {/* 过滤器：重构为磨砂圆角胶囊风格 */}
+      <div className="flex items-center justify-center sm:justify-between mb-8">
+        <div className="flex items-center gap-1 p-1.5 bg-black/10 dark:bg-white/5 backdrop-blur-2xl rounded-full border border-white/5">
           {tabs.map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`relative px-4 sm:px-8 py-5 text-[11px] sm:text-[13px] font-black transition-all uppercase tracking-widest ${
+              className={`px-5 sm:px-8 py-2 sm:py-2.5 rounded-full text-[11px] sm:text-[13px] font-black transition-all uppercase tracking-widest ${
                 activeTab === tab 
-                ? 'text-black dark:text-white' 
-                : 'text-gray-400 dark:text-white/30 hover:text-gray-900 dark:hover:text-white'
+                ? 'bg-[#12141c] dark:bg-amber-500 text-white shadow-xl' 
+                : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
               {translateSignalType(tab)}
-              {activeTab === tab && (
-                <div className="absolute bottom-0 left-4 right-4 h-0.5 bg-amber-500 rounded-full animate-in fade-in slide-in-from-bottom-1" />
-              )}
             </button>
           ))}
         </div>

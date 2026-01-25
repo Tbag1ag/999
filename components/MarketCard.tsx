@@ -55,8 +55,8 @@ const MarketCard: React.FC<MarketCardProps> = ({ insight, onEdit, onDelete, isEd
 
       {effectiveArchived && (
         <div className={`absolute inset-0 flex items-center justify-center pointer-events-none z-10 transition-all duration-500 ${isRevealed ? 'opacity-0 scale-150' : 'opacity-80 scale-100'}`}>
-           <div className="w-32 h-32 sm:w-52 sm:h-52 border-[3px] sm:border-[6px] border-emerald-400 rounded-full flex items-center justify-center -rotate-[15deg] shadow-[0_0_30px_rgba(52,211,153,0.15)]">
-              <Check className="w-20 h-20 sm:w-32 sm:h-32 text-emerald-400 stroke-[3px]" />
+           <div className="w-32 h-32 sm:w-52 sm:h-52 border-[3px] sm:border-[6px] border-green-400 rounded-full flex items-center justify-center -rotate-[15deg] shadow-[0_0_30px_rgba(74,222,128,0.15)]">
+              <Check className="w-20 h-20 sm:w-32 sm:h-32 text-green-400 stroke-[3px]" />
            </div>
         </div>
       )}
@@ -66,7 +66,7 @@ const MarketCard: React.FC<MarketCardProps> = ({ insight, onEdit, onDelete, isEd
           <h3 className="text-3xl sm:text-6xl font-[900] text-black dark:text-white tracking-tighter uppercase italic leading-none opacity-90 mb-3 sm:mb-5">
             {insight.symbol}
           </h3>
-          <div className={`inline-flex items-center gap-1.5 px-3 py-1 sm:px-4 sm:py-1.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest shadow-sm ${isUp ? 'bg-emerald-500 text-white' : isDown ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'}`}>
+          <div className={`inline-flex items-center gap-1.5 px-3 py-1 sm:px-4 sm:py-1.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest shadow-sm ${isUp ? 'bg-green-500 text-white' : isDown ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'}`}>
              {isUp ? <TrendingUp className="w-3 h-3" /> : isDown ? <TrendingDown className="w-3 h-3" /> : <Activity className="w-3 h-3" />}
              {insight.status}
           </div>
@@ -89,7 +89,7 @@ const MarketCard: React.FC<MarketCardProps> = ({ insight, onEdit, onDelete, isEd
 
       <div className={`mt-6 sm:mt-12 pt-5 sm:pt-8 border-t border-black/5 flex items-center justify-between relative z-20 transition-opacity duration-700 ${effectiveArchived && !isRevealed ? 'opacity-30' : 'opacity-100'}`}>
          <div className="flex items-center gap-2 sm:gap-4">
-            <span className={`px-2 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[8px] sm:text-[9px] font-black uppercase tracking-widest ${isCompleted ? 'bg-emerald-500/10 text-emerald-600' : isExpired ? 'bg-red-500/10 text-red-600' : 'bg-black/10 dark:bg-white/10 text-black dark:text-gray-300'}`}>
+            <span className={`px-2 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[8px] sm:text-[9px] font-black uppercase tracking-widest ${isCompleted ? 'bg-green-500/10 text-green-600' : isExpired ? 'bg-red-500/10 text-red-600' : 'bg-black/10 dark:bg-white/10 text-black dark:text-gray-300'}`}>
               {isCompleted ? '已结案' : isExpired ? '已失效' : insight.category}
             </span>
             <div className="flex items-center gap-1.5 text-[8px] sm:text-[9px] font-black text-black dark:text-white/40 uppercase tracking-widest">

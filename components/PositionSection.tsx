@@ -72,17 +72,20 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
     const totalEquity = INITIAL_CAPITAL + totalProfit;
     const totalReturnRate = (totalProfit / INITIAL_CAPITAL) * 100;
 
-    const now = Date.now();
-    const dayAgo = now - 86400000;
-    const monthAgo = now - 2592000000;
+    // 获取时间节点：今日 00:00 和 本月 1 号 00:00
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
 
+    // 日收益：仅计算今天更新过的记录中的盈亏额
     const dailyProfit = positions
-      .filter(p => p.updatedAt > dayAgo)
+      .filter(p => p.updatedAt >= startOfToday)
       .reduce((sum, p) => sum + (p.yieldAmount || 0), 0);
     const dailyReturnRate = (dailyProfit / INITIAL_CAPITAL) * 100;
 
+    // 月收益：仅计算本月更新过的记录中的盈亏额
     const monthlyProfit = positions
-      .filter(p => p.updatedAt > monthAgo)
+      .filter(p => p.updatedAt >= startOfMonth)
       .reduce((sum, p) => sum + (p.yieldAmount || 0), 0);
     const monthlyReturnRate = (monthlyProfit / INITIAL_CAPITAL) * 100;
     

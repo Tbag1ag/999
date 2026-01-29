@@ -114,7 +114,7 @@ const PositionForm: React.FC<PositionFormProps> = ({ initialData, onSave, onCanc
                   : 'text-gray-400 hover:text-emerald-500'
                 }`}
               >
-                <ArrowUpRight className="w-4 h-4" /> 买入 / 多
+                <ArrowUpRight className="w-4 h-4" /> 买入 / 多头
               </button>
               <button
                 type="button"
@@ -125,7 +125,7 @@ const PositionForm: React.FC<PositionFormProps> = ({ initialData, onSave, onCanc
                   : 'text-gray-400 hover:text-red-500'
                 }`}
               >
-                <ArrowDownRight className="w-4 h-4" /> 卖出 / 空
+                <ArrowDownRight className="w-4 h-4" /> 卖出 / 空头
               </button>
             </div>
           </div>

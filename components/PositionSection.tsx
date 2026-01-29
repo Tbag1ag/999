@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { PositionEntry, PositionSignalType, PositionStatus } from '../types';
-import { TrendingUp, Edit2, Trash2, Clock, ChevronUp, ChevronDown, Download, Archive } from 'lucide-react';
+import { TrendingUp, Edit2, Trash2, Clock, ChevronUp, ChevronDown, Download, Archive, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 
 interface PositionSectionProps {
   positions: PositionEntry[];
@@ -72,20 +72,19 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
     const totalEquity = INITIAL_CAPITAL + totalProfit;
     const totalReturnRate = (totalProfit / INITIAL_CAPITAL) * 100;
 
-    // 获取时间节点：今日 00:00 和 本月 1 号 00:00
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
 
-    // 日收益：仅计算今天更新过的记录中的盈亏额
+    // 日收益率：仅统计“已平仓”且更新时间在今天的记录
     const dailyProfit = positions
-      .filter(p => p.updatedAt >= startOfToday)
+      .filter(p => p.status === '已平仓' && p.updatedAt >= startOfToday)
       .reduce((sum, p) => sum + (p.yieldAmount || 0), 0);
     const dailyReturnRate = (dailyProfit / INITIAL_CAPITAL) * 100;
 
-    // 月收益：仅计算本月更新过的记录中的盈亏额
+    // 月收益率：仅统计“已平仓”且更新时间在本月的记录
     const monthlyProfit = positions
-      .filter(p => p.updatedAt >= startOfMonth)
+      .filter(p => p.status === '已平仓' && p.updatedAt >= startOfMonth)
       .reduce((sum, p) => sum + (p.yieldAmount || 0), 0);
     const monthlyReturnRate = (monthlyProfit / INITIAL_CAPITAL) * 100;
     
@@ -112,7 +111,7 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
           <thead>
             <tr className="border-b border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5">
               {[
-                { key: 'symbol', label: '标的' },
+                { key: 'symbol', label: '标的 / 方向' },
                 { key: 'status', label: '状态' },
                 { key: 'signalType', label: '周期' },
                 { key: 'shares', label: '股数' },
@@ -139,8 +138,13 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
               <tr key={pos.id} className="group/tr hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                 <td className="px-8 py-7">
                   <div className="flex flex-col">
-                    <span className="text-lg font-[900] text-black dark:text-white uppercase tracking-tighter">{pos.symbol}</span>
-                    <span className="text-[10px] font-black text-black/40 dark:text-white/40 uppercase tracking-widest">{pos.category} / {pos.side}</span>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xl font-[900] text-black dark:text-white uppercase tracking-tighter">{pos.symbol}</span>
+                      <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${pos.side === 'Buy' ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
+                        {pos.side === 'Buy' ? '多头' : '空头'}
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-black text-black/40 dark:text-white/40 uppercase tracking-widest">{pos.category}</span>
                   </div>
                 </td>
                 <td className="px-8 py-7">
@@ -157,19 +161,19 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
                 <td className="px-8 py-7 font-black text-[15px] text-black dark:text-white/90">
                   {pos.entryPrice || '/'}
                 </td>
-                <td className={`px-8 py-7 font-[900] text-lg ${pos.yieldRate > 0 ? 'text-green-400' : pos.yieldRate < 0 ? 'text-red-500' : 'text-gray-400'}`}>
+                <td className={`px-8 py-7 font-[900] text-xl ${pos.yieldRate > 0 ? 'text-green-400' : pos.yieldRate < 0 ? 'text-red-500' : 'text-gray-400'}`}>
                   {pos.yieldRate > 0 ? '+' : ''}{pos.yieldRate?.toFixed(2)}%
                 </td>
-                <td className={`px-8 py-7 font-[900] text-lg ${pos.yieldAmount > 0 ? 'text-green-400' : pos.yieldAmount < 0 ? 'text-red-500' : 'text-gray-400'}`}>
+                <td className={`px-8 py-7 font-[900] text-xl ${pos.yieldAmount > 0 ? 'text-green-400' : pos.yieldAmount < 0 ? 'text-red-500' : 'text-gray-400'}`}>
                   {pos.yieldAmount > 0 ? '+' : ''}{pos.yieldAmount?.toLocaleString() || '0'}
                 </td>
                 {isAdmin && (
                   <td className="px-8 py-7 text-right">
                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover/tr:opacity-100 transition-opacity">
-                      <button onClick={() => onEdit(pos)} className="p-2 bg-black/5 dark:bg-white/10 hover:bg-amber-500 hover:text-white rounded-lg">
+                      <button onClick={() => onEdit(pos)} className="p-2 bg-black/5 dark:bg-white/10 hover:bg-amber-500 hover:text-white rounded-lg transition-colors">
                         <Edit2 className="w-4 h-4" />
                       </button>
-                      <button onClick={() => onDelete(pos.id)} className="p-2 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-lg">
+                      <button onClick={() => onDelete(pos.id)} className="p-2 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-colors">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -186,8 +190,13 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
           <div key={pos.id} className="p-4 space-y-3" onClick={() => isAdmin && onEdit(pos)}>
             <div className="flex items-start justify-between">
               <div>
-                <h4 className="text-lg font-[900] text-black dark:text-white uppercase tracking-tighter leading-none">{pos.symbol}</h4>
-                <p className="text-[9px] font-black text-black/40 dark:text-white/40 mt-1 uppercase tracking-widest">{pos.category} · {pos.side === 'Buy' ? '多' : '空'}</p>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-lg font-[900] text-black dark:text-white uppercase tracking-tighter leading-none">{pos.symbol}</h4>
+                  <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${pos.side === 'Buy' ? 'text-green-500 bg-green-500/10' : 'text-red-500 bg-red-500/10'}`}>
+                    {pos.side === 'Buy' ? '多' : '空'}
+                  </span>
+                </div>
+                <p className="text-[9px] font-black text-black/40 dark:text-white/40 mt-1 uppercase tracking-widest">{pos.category}</p>
               </div>
               <span className={`px-2 py-0.5 rounded-md text-[8px] ${getStatusStyle(pos.status)}`}>
                 {pos.status}
@@ -222,8 +231,8 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
           { label: '总资产 (Equity)', value: `$${stats.totalEquity.toLocaleString()}`, color: 'text-black dark:text-white' },
-          { label: '日收益率 (Daily)', value: `${stats.dailyReturnRate.toFixed(2)}%`, color: stats.dailyReturnRate >= 0 ? 'text-green-400' : 'text-red-500' },
-          { label: '月收益率 (Monthly)', value: `${stats.monthlyReturnRate.toFixed(2)}%`, color: stats.monthlyReturnRate >= 0 ? 'text-green-400' : 'text-red-500' },
+          { label: '日实现收益 (Daily)', value: `${stats.dailyReturnRate.toFixed(2)}%`, color: stats.dailyReturnRate >= 0 ? 'text-green-400' : 'text-red-500' },
+          { label: '月实现收益 (Monthly)', value: `${stats.monthlyReturnRate.toFixed(2)}%`, color: stats.monthlyReturnRate >= 0 ? 'text-green-400' : 'text-red-500' },
           { label: '总收益率 (ROI)', value: `${stats.totalReturnRate.toFixed(2)}%`, color: stats.totalReturnRate >= 0 ? 'text-green-400' : 'text-red-500' }
         ].map((item, i) => (
           <div key={i} className="bg-glass p-6 sm:p-10 border border-white/10 flex flex-col justify-center">
@@ -235,7 +244,6 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
         ))}
       </div>
 
-      {/* 过滤器：重构为磨砂圆角胶囊风格 */}
       <div className="flex items-center justify-center sm:justify-between mb-8">
         <div className="flex items-center gap-1 p-1.5 bg-black/10 dark:bg-white/5 backdrop-blur-2xl rounded-full border border-white/5">
           {tabs.map(tab => (

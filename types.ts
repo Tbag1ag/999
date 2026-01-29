@@ -50,6 +50,7 @@ export interface MarketInsight {
   focusPoints: string;
   strategy: string;
   entryLevel?: string;
+  imageUrl?: string; // 新增图片字段
   updatedAt: number;
   completionStatus: CompletionStatus;
 }

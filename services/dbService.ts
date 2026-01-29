@@ -20,6 +20,7 @@ export const initDatabase = async () => {
         focus_points TEXT,
         strategy TEXT,
         entry_level TEXT,
+        image_url TEXT,
         updated_at BIGINT,
         completion_status TEXT DEFAULT '进行中'
       );
@@ -54,9 +55,9 @@ export const initDatabase = async () => {
       );
     `;
 
-    // 增量补全逻辑：如果表已存在但缺失列，手动添加
-    // PostgreSQL 不支持一条语句添加多个带 IF NOT EXISTS 的列，所以分开写
+    // 增量补全逻辑
     try {
+      await sql`ALTER TABLE insights ADD COLUMN IF NOT EXISTS image_url TEXT`;
       await sql`ALTER TABLE positions ADD COLUMN IF NOT EXISTS shares DOUBLE PRECISION DEFAULT 1`;
       await sql`ALTER TABLE positions ADD COLUMN IF NOT EXISTS yield_rate DOUBLE PRECISION DEFAULT 0`;
       await sql`ALTER TABLE positions ADD COLUMN IF NOT EXISTS yield_amount DOUBLE PRECISION DEFAULT 0`;

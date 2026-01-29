@@ -72,7 +72,13 @@ const MarketCard: React.FC<MarketCardProps> = ({ insight, onEdit, onDelete, isEd
           </div>
         </div>
 
-        <div className="mb-6 sm:mb-12">
+        {/* 动态图文区域 */}
+        <div className="space-y-6 sm:space-y-8 mb-6 sm:mb-12">
+          {insight.imageUrl && (
+            <div className="relative w-full aspect-video rounded-3xl overflow-hidden shadow-2xl border border-black/5 dark:border-white/5">
+              <img src={insight.imageUrl} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt={insight.symbol} />
+            </div>
+          )}
           <p className="text-[15px] sm:text-[21px] font-black text-black dark:text-white leading-[1.6] tracking-tight">
             {insight.focusPoints}
           </p>

@@ -62,7 +62,14 @@ const App: React.FC = () => {
           sql`SELECT * FROM journals ORDER BY date DESC`,
           sql`SELECT * FROM positions ORDER BY updated_at DESC`
         ]);
-        setInsights(insData.map((i: any) => ({ ...i, updatedAt: Number(i.updated_at), focusPoints: i.focus_points, entryLevel: i.entry_level, completionStatus: i.completion_status })));
+        setInsights(insData.map((i: any) => ({ 
+          ...i, 
+          updatedAt: Number(i.updated_at), 
+          focusPoints: i.focus_points, 
+          entryLevel: i.entry_level, 
+          completionStatus: i.completion_status,
+          imageUrl: i.image_url
+        })));
         setJournals(jrData.map((j: any) => ({ ...j, date: Number(j.date) })));
         setPositions(posData.map((p: any) => ({ 
           ...p, 
@@ -146,9 +153,9 @@ const App: React.FC = () => {
     const finalData = { ...data, id, updatedAt: Date.now() };
     try {
       if (editingInsight) {
-        await sql`UPDATE insights SET symbol=${finalData.symbol}, category=${finalData.category}, status=${finalData.status}, focus_points=${finalData.focusPoints}, strategy=${finalData.strategy}, entry_level=${finalData.entryLevel}, updated_at=${finalData.updatedAt}, completion_status=${finalData.completionStatus} WHERE id=${id}`;
+        await sql`UPDATE insights SET symbol=${finalData.symbol}, category=${finalData.category}, status=${finalData.status}, focus_points=${finalData.focusPoints}, strategy=${finalData.strategy}, entry_level=${finalData.entryLevel}, updated_at=${finalData.updatedAt}, completion_status=${finalData.completionStatus}, image_url=${finalData.imageUrl || null} WHERE id=${id}`;
       } else {
-        await sql`INSERT INTO insights (id, symbol, category, status, focus_points, strategy, entry_level, updated_at, completion_status) VALUES (${id}, ${finalData.symbol}, ${finalData.category}, ${finalData.status}, ${finalData.focusPoints}, ${finalData.strategy}, ${finalData.entryLevel}, ${finalData.updatedAt}, ${finalData.completionStatus})`;
+        await sql`INSERT INTO insights (id, symbol, category, status, focus_points, strategy, entry_level, updated_at, completion_status, image_url) VALUES (${id}, ${finalData.symbol}, ${finalData.category}, ${finalData.status}, ${finalData.focusPoints}, ${finalData.strategy}, ${finalData.entryLevel}, ${finalData.updatedAt}, ${finalData.completionStatus}, ${finalData.imageUrl || null})`;
       }
       setShowInsightForm(false);
       fetchData();
@@ -185,7 +192,6 @@ const App: React.FC = () => {
   const handleSavePosition = async (data: Partial<PositionEntry>) => {
     if (!sql) return;
     const id = editingPosition?.id || crypto.randomUUID();
-    // 确保 signalTime 存在（如果是新记录，使用表单传来的或当前时间）
     const finalData = { 
       ...data, 
       id, 
@@ -195,7 +201,6 @@ const App: React.FC = () => {
     
     try {
       if (editingPosition) {
-        // 修复：将 yield_amount 映射到 finalData.yieldAmount 而非 yield_amount
         await sql`UPDATE positions SET symbol=${finalData.symbol}, category=${finalData.category}, signal_type=${finalData.signalType}, side=${finalData.side}, status=${finalData.status}, signal_time=${finalData.signalTime}, entry_price=${finalData.entryPrice}, shares=${finalData.shares}, yield_rate=${finalData.yieldRate}, yield_amount=${finalData.yieldAmount}, updated_at=${finalData.updatedAt} WHERE id=${id}`;
       } else {
         await sql`INSERT INTO positions (id, symbol, category, signal_type, side, status, signal_time, entry_price, shares, yield_rate, yield_amount, updated_at) VALUES (${id}, ${finalData.symbol}, ${finalData.category}, ${finalData.signalType}, ${finalData.side}, ${finalData.status}, ${finalData.signalTime}, ${finalData.entryPrice}, ${finalData.shares}, ${finalData.yieldRate}, ${finalData.yieldAmount}, ${finalData.updatedAt})`;

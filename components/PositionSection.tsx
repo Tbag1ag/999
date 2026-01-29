@@ -68,23 +68,27 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
   }, [positions, activeTab, sortConfig]);
 
   const stats = useMemo(() => {
-    const totalProfit = positions.reduce((sum, p) => sum + (p.yieldAmount || 0), 0);
-    const totalEquity = INITIAL_CAPITAL + totalProfit;
-    const totalReturnRate = (totalProfit / INITIAL_CAPITAL) * 100;
+    // 核心逻辑：所有统计指标仅包含“已平仓”状态的记录
+    const closedPositions = positions.filter(p => p.status === '已平仓');
+    
+    // 总盈亏：仅统计已平仓位
+    const totalRealizedProfit = closedPositions.reduce((sum, p) => sum + (p.yieldAmount || 0), 0);
+    const totalEquity = INITIAL_CAPITAL + totalRealizedProfit;
+    const totalReturnRate = (totalRealizedProfit / INITIAL_CAPITAL) * 100;
 
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
 
-    // 日收益率：仅统计“已平仓”且更新时间在今天的记录
-    const dailyProfit = positions
-      .filter(p => p.status === '已平仓' && p.updatedAt >= startOfToday)
+    // 日实现收益：仅统计今日更新且已平仓的记录
+    const dailyProfit = closedPositions
+      .filter(p => p.updatedAt >= startOfToday)
       .reduce((sum, p) => sum + (p.yieldAmount || 0), 0);
     const dailyReturnRate = (dailyProfit / INITIAL_CAPITAL) * 100;
 
-    // 月收益率：仅统计“已平仓”且更新时间在本月的记录
-    const monthlyProfit = positions
-      .filter(p => p.status === '已平仓' && p.updatedAt >= startOfMonth)
+    // 月实现收益：仅统计本月更新且已平仓的记录
+    const monthlyProfit = closedPositions
+      .filter(p => p.updatedAt >= startOfMonth)
       .reduce((sum, p) => sum + (p.yieldAmount || 0), 0);
     const monthlyReturnRate = (monthlyProfit / INITIAL_CAPITAL) * 100;
     
@@ -230,10 +234,10 @@ const PositionSection: React.FC<PositionSectionProps> = ({ positions, isAdmin, o
     <div className="w-full max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: '总资产 (Equity)', value: `$${stats.totalEquity.toLocaleString()}`, color: 'text-black dark:text-white' },
+          { label: '结案总资产 (Realized Equity)', value: `$${stats.totalEquity.toLocaleString()}`, color: 'text-black dark:text-white' },
           { label: '日实现收益 (Daily)', value: `${stats.dailyReturnRate.toFixed(2)}%`, color: stats.dailyReturnRate >= 0 ? 'text-green-400' : 'text-red-500' },
           { label: '月实现收益 (Monthly)', value: `${stats.monthlyReturnRate.toFixed(2)}%`, color: stats.monthlyReturnRate >= 0 ? 'text-green-400' : 'text-red-500' },
-          { label: '总收益率 (ROI)', value: `${stats.totalReturnRate.toFixed(2)}%`, color: stats.totalReturnRate >= 0 ? 'text-green-400' : 'text-red-500' }
+          { label: '实现回报率 (Realized ROI)', value: `${stats.totalReturnRate.toFixed(2)}%`, color: stats.totalReturnRate >= 0 ? 'text-green-400' : 'text-red-500' }
         ].map((item, i) => (
           <div key={i} className="bg-glass p-6 sm:p-10 border border-white/10 flex flex-col justify-center">
             <p className="text-[9px] font-black text-black/50 dark:text-white/50 uppercase tracking-[0.2em] mb-1">{item.label}</p>

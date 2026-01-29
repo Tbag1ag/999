@@ -39,6 +39,7 @@ const App: React.FC = () => {
 
   const [showInsightForm, setShowInsightForm] = useState(false);
   const [editingInsight, setEditingInsight] = useState<MarketInsight | undefined>(undefined);
+  const [expandedImageUrl, setExpandedImageUrl] = useState<string | null>(null);
   
   const [showJournalForm, setShowJournalForm] = useState(false);
   const [editingJournal, setEditingJournal] = useState<JournalEntry | undefined>(undefined);
@@ -203,6 +204,7 @@ const App: React.FC = () => {
       if (editingPosition) {
         await sql`UPDATE positions SET symbol=${finalData.symbol}, category=${finalData.category}, signal_type=${finalData.signalType}, side=${finalData.side}, status=${finalData.status}, signal_time=${finalData.signalTime}, entry_price=${finalData.entryPrice}, shares=${finalData.shares}, yield_rate=${finalData.yieldRate}, yield_amount=${finalData.yieldAmount}, updated_at=${finalData.updatedAt} WHERE id=${id}`;
       } else {
+        // Corrected property names from snake_case to camelCase when accessing finalData object
         await sql`INSERT INTO positions (id, symbol, category, signal_type, side, status, signal_time, entry_price, shares, yield_rate, yield_amount, updated_at) VALUES (${id}, ${finalData.symbol}, ${finalData.category}, ${finalData.signalType}, ${finalData.side}, ${finalData.status}, ${finalData.signalTime}, ${finalData.entryPrice}, ${finalData.shares}, ${finalData.yieldRate}, ${finalData.yieldAmount}, ${finalData.updatedAt})`;
       }
       setShowPositionForm(false);
@@ -226,7 +228,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen pt-28 sm:pt-36 pb-32 sm:pb-40 relative">
+    <div className={`min-h-screen pt-28 sm:pt-36 pb-32 sm:pb-40 relative ${expandedImageUrl ? 'overflow-hidden' : ''}`}>
       <div className="app-bg" style={{ backgroundImage: `url('${bgImage}')` }}></div>
       <div className="app-bg-overlay"></div>
 
@@ -296,6 +298,7 @@ const App: React.FC = () => {
                       onEdit={(ins) => { setEditingInsight(ins); setShowInsightForm(true); }} 
                       onDelete={handleDeleteInsight} 
                       onToggleCompletion={() => {}} 
+                      onImageClick={(url) => setExpandedImageUrl(url)}
                       isEditable={isAdmin} 
                     />
                   ))}
@@ -324,6 +327,7 @@ const App: React.FC = () => {
                           onEdit={(ins) => { setEditingInsight(ins); setShowInsightForm(true); }} 
                           onDelete={handleDeleteInsight} 
                           onToggleCompletion={() => {}} 
+                          onImageClick={(url) => setExpandedImageUrl(url)}
                           isEditable={isAdmin} 
                           isArchived={true}
                         />
@@ -385,6 +389,29 @@ const App: React.FC = () => {
           onSave={handleSavePosition} 
           onCancel={() => setShowPositionForm(false)} 
         />
+      )}
+
+      {/* 图片全屏查看器 */}
+      {expandedImageUrl && (
+        <div 
+          className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/80 backdrop-blur-3xl p-4 sm:p-10 animate-in fade-in duration-300"
+          onClick={() => setExpandedImageUrl(null)}
+        >
+          <button 
+            className="absolute top-6 right-6 sm:top-10 sm:right-10 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all z-[2001]"
+            onClick={() => setExpandedImageUrl(null)}
+          >
+            <X className="w-6 h-6 sm:w-8 sm:h-8" />
+          </button>
+          <div className="relative max-w-full max-h-full flex items-center justify-center animate-in zoom-in-95 duration-500 ease-out">
+            <img 
+              src={expandedImageUrl} 
+              className="max-w-full max-h-[85vh] sm:max-h-[90vh] object-contain rounded-2xl sm:rounded-3xl shadow-[0_0_100px_rgba(0,0,0,0.5)] border border-white/10" 
+              alt="Expanded Market Insight"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

@@ -1,18 +1,19 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { MarketInsight } from '../types';
-import { Edit2, Trash2, TrendingUp, TrendingDown, Activity, Edit3, Clock, Check } from 'lucide-react';
+import { Edit2, Trash2, TrendingUp, TrendingDown, Activity, Edit3, Clock, Check, Maximize2 } from 'lucide-react';
 
 interface MarketCardProps {
   insight: MarketInsight;
   onEdit: (insight: MarketInsight) => void;
   onDelete: (id: string) => void;
   onToggleCompletion: (id: string) => void;
+  onImageClick?: (url: string) => void;
   isEditable?: boolean;
   isArchived?: boolean;
 }
 
-const MarketCard: React.FC<MarketCardProps> = ({ insight, onEdit, onDelete, isEditable = false, isArchived = false }) => {
+const MarketCard: React.FC<MarketCardProps> = ({ insight, onEdit, onDelete, onImageClick, isEditable = false, isArchived = false }) => {
   const [isRevealed, setIsRevealed] = useState(false);
   const revealTimer = useRef<number | null>(null);
 
@@ -75,8 +76,23 @@ const MarketCard: React.FC<MarketCardProps> = ({ insight, onEdit, onDelete, isEd
         {/* 动态图文区域 */}
         <div className="space-y-6 sm:space-y-8 mb-6 sm:mb-12">
           {insight.imageUrl && (
-            <div className="relative w-full aspect-video rounded-3xl overflow-hidden shadow-2xl border border-black/5 dark:border-white/5">
-              <img src={insight.imageUrl} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt={insight.symbol} />
+            <div 
+              className="relative w-full aspect-video rounded-3xl overflow-hidden shadow-2xl border border-black/5 dark:border-white/5 cursor-zoom-in"
+              onClick={(e) => {
+                if (onImageClick) {
+                  e.stopPropagation();
+                  onImageClick(insight.imageUrl!);
+                }
+              }}
+            >
+              <img 
+                src={insight.imageUrl} 
+                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" 
+                alt={insight.symbol} 
+              />
+              <div className="absolute inset-0 bg-black/20 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                <Maximize2 className="w-8 h-8 text-white drop-shadow-lg" />
+              </div>
             </div>
           )}
           <p className="text-[15px] sm:text-[21px] font-black text-black dark:text-white leading-[1.6] tracking-tight">

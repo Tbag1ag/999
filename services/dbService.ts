@@ -10,7 +10,6 @@ export const initDatabase = async () => {
   if (!sql) return;
   
   try {
-    // 基础表创建
     await sql`
       CREATE TABLE IF NOT EXISTS insights (
         id TEXT PRIMARY KEY,
@@ -20,7 +19,6 @@ export const initDatabase = async () => {
         focus_points TEXT,
         strategy TEXT,
         entry_level TEXT,
-        image_url TEXT,
         updated_at BIGINT,
         completion_status TEXT DEFAULT '进行中'
       );
@@ -37,34 +35,19 @@ export const initDatabase = async () => {
         date BIGINT
       );
     `;
-
+    
     await sql`
-      CREATE TABLE IF NOT EXISTS positions (
+      CREATE TABLE IF NOT EXISTS alerts (
         id TEXT PRIMARY KEY,
         symbol TEXT NOT NULL,
-        category TEXT DEFAULT '美股',
-        signal_type TEXT,
-        side TEXT,
-        status TEXT DEFAULT '观察中',
-        signal_time BIGINT,
-        entry_price DOUBLE PRECISION,
-        shares DOUBLE PRECISION DEFAULT 1,
-        yield_rate DOUBLE PRECISION DEFAULT 0,
-        yield_amount DOUBLE PRECISION DEFAULT 0,
-        updated_at BIGINT
+        type TEXT NOT NULL,
+        title TEXT,
+        content TEXT,
+        status TEXT DEFAULT '监听中',
+        priority TEXT DEFAULT '中',
+        created_at BIGINT
       );
     `;
-
-    // 增量补全逻辑
-    try {
-      await sql`ALTER TABLE insights ADD COLUMN IF NOT EXISTS image_url TEXT`;
-      await sql`ALTER TABLE positions ADD COLUMN IF NOT EXISTS shares DOUBLE PRECISION DEFAULT 1`;
-      await sql`ALTER TABLE positions ADD COLUMN IF NOT EXISTS yield_rate DOUBLE PRECISION DEFAULT 0`;
-      await sql`ALTER TABLE positions ADD COLUMN IF NOT EXISTS yield_amount DOUBLE PRECISION DEFAULT 0`;
-      await sql`ALTER TABLE positions ADD COLUMN IF NOT EXISTS category TEXT DEFAULT '美股'`;
-    } catch (e) {
-      console.warn("增量更新列失败（可能列已存在）:", e);
-    }
     
     await sql`
       CREATE TABLE IF NOT EXISTS notifications (

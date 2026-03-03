@@ -1,7 +1,7 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { MarketInsight, AssetStatus, CompletionStatus } from '../types';
-import { X, Calendar as CalendarIcon, Upload, Trash2, Image as ImageIcon } from 'lucide-react';
+import { X, Calendar as CalendarIcon } from 'lucide-react';
 import { CATEGORIES } from '../constants';
 
 interface InsightFormProps {
@@ -19,24 +19,10 @@ const InsightForm: React.FC<InsightFormProps> = ({ initialData, onSave, onCancel
       focusPoints: '',
       strategy: '',
       entryLevel: '',
-      imageUrl: '',
       updatedAt: Date.now(),
       completionStatus: '进行中',
     }
   );
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData({ ...formData, imageUrl: reader.result as string });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,49 +49,6 @@ const InsightForm: React.FC<InsightFormProps> = ({ initialData, onSave, onCancel
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-5 overflow-y-auto max-h-[calc(92vh-80px)] sm:max-h-[85vh]">
-          {/* 图片上传区域 */}
-          <div className="space-y-2">
-            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">配图 (图文结合)</label>
-            <div 
-              onClick={() => !formData.imageUrl && fileInputRef.current?.click()}
-              className={`relative h-40 rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center overflow-hidden cursor-pointer ${formData.imageUrl ? 'border-amber-500' : 'border-gray-100 bg-gray-50 hover:bg-gray-100 hover:border-gray-200'}`}
-            >
-              {formData.imageUrl ? (
-                <>
-                  <img src={formData.imageUrl} className="w-full h-full object-cover" alt="Preview" />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
-                    <button 
-                      type="button" 
-                      onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                      className="p-3 bg-white text-gray-900 rounded-full shadow-lg"
-                    >
-                      <Upload className="w-5 h-5" />
-                    </button>
-                    <button 
-                      type="button" 
-                      onClick={(e) => { e.stopPropagation(); setFormData({...formData, imageUrl: ''}); }}
-                      className="p-3 bg-red-500 text-white rounded-full shadow-lg"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <div className="flex flex-col items-center">
-                  <ImageIcon className="w-8 h-8 text-gray-300 mb-2" />
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">点击上传行情图</p>
-                </div>
-              )}
-              <input 
-                ref={fileInputRef}
-                type="file" 
-                accept="image/*" 
-                className="hidden" 
-                onChange={handleImageUpload} 
-              />
-            </div>
-          </div>
-
           {/* 完成状态选择 */}
           <div className="bg-gray-50 p-4 sm:p-5 rounded-2xl space-y-3 border border-gray-100">
             <div>
@@ -153,9 +96,9 @@ const InsightForm: React.FC<InsightFormProps> = ({ initialData, onSave, onCancel
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">代码</label>
               <input
                 required
-                className="w-full p-3.5 bg-gray-50 border border-transparent focus:bg-white focus:border-gray-900 rounded-2xl outline-none transition-all text-sm font-black uppercase"
+                className="w-full p-3.5 bg-gray-50 border border-transparent focus:bg-white focus:border-gray-900 rounded-2xl outline-none transition-all text-sm font-black"
                 value={formData.symbol}
-                onChange={(e) => setFormData({ ...formData, symbol: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, symbol: e.target.value.toUpperCase() })}
                 placeholder="BTC"
               />
             </div>

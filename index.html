@@ -3,153 +3,72 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=0" />
-    <title>市场周刊 | Market Weekly</title>
-    
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="市场周刊" />
-    <link rel="apple-touch-icon" href="https://images.pexels.com/photos/3458700/pexels-photo-3458700.jpeg" />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>市场周刊</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
         darkMode: 'class',
-        theme: {
-          extend: {
-            colors: {
-              'market-dark': '#12141c',
-            }
-          }
-        }
       }
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
+      /* 全局平滑过渡优化 */
       *, *::before, *::after {
-        transition: background-color 0.4s, border-color 0.4s, color 0.4s, transform 0.4s, opacity 0.4s, backdrop-filter 0.4s, box-shadow 0.4s;
-        -webkit-tap-highlight-color: transparent;
+        transition-property: background-color, border-color, color, fill, stroke, box-shadow;
+        transition-duration: 200ms;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
       }
 
       body {
         font-family: 'Inter', sans-serif;
-        margin: 0;
-        background: #0d1117;
-        overflow-x: hidden;
-        padding-top: env(safe-area-inset-top);
-        padding-bottom: env(safe-area-inset-bottom);
+        background-color: #f8fafc;
+        color: #0f172a;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
       }
-
-      .app-bg {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        z-index: -2;
-        object-fit: cover;
-        background-size: cover;
-        background-position: center;
-      }
-
-      .app-bg-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        z-index: -1;
-        background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.1) 100%);
-        pointer-events: none;
-      }
-
-      /* 桌面端保持高质量玻璃感 */
-      .bg-glass {
-        background: rgba(255, 255, 255, 0.12);
-        backdrop-filter: blur(60px) saturate(180%);
-        -webkit-backdrop-filter: blur(60px) saturate(180%);
-        border-radius: 2.5rem;
-        box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-      }
-
-      /* 移动端去 iOS 化：标准圆角 + 简洁边框 */
-      @media (max-width: 640px) {
-        .bg-glass {
-          border-radius: 0.75rem; 
-          background: rgba(255, 255, 255, 0.08);
-          backdrop-filter: blur(20px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-          border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        
-        /* 移动端容器间距微调 */
-        main {
-          padding-left: 1rem !important;
-          padding-right: 1rem !important;
-        }
-      }
-
-      .dark .bg-glass {
-        background: rgba(22, 26, 34, 0.65);
-      }
-
-      .strategy-box {
-        background: rgba(255, 255, 255, 0.55);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border-radius: 1.5rem;
-      }
-
-      @media (max-width: 640px) {
-        .strategy-box {
-          border-radius: 0.5rem;
-          background: rgba(255, 255, 255, 0.05);
-        }
-      }
-
-      .dark .strategy-box {
-        background: rgba(255, 255, 255, 0.08);
-      }
-
-      .stadium-nav {
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(40px) saturate(150%);
-        -webkit-backdrop-filter: blur(40px) saturate(150%);
+      .dark body {
+        background-color: #020617;
+        color: #f8fafc;
       }
       
-      .dark .stadium-nav {
-        background: rgba(30, 35, 45, 0.5);
+      ::-webkit-scrollbar { width: 6px; height: 6px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.05); border-radius: 10px; }
+      .dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); }
+      
+      .no-transition {
+        transition: none !important;
       }
 
-      ::-webkit-scrollbar { width: 0px; }
-
-      @media screen and (max-width: 768px) {
-        input, select, textarea {
-          font-size: 16px !important;
-        }
+      /* Custom utility for glass effect */
+      .glass {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      }
+      .dark .glass {
+        background: rgba(15, 23, 42, 0.7);
       }
     </style>
   <script type="importmap">
 {
   "imports": {
-    "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
+    "@google/genai": "https://esm.sh/@google/genai@^1.35.0",
+    "@neondatabase/serverless": "https://esm.sh/@neondatabase/serverless@^0.9.0",
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
     "react/": "https://esm.sh/react@^19.2.3/",
     "react": "https://esm.sh/react@^19.2.3",
     "vite": "https://esm.sh/vite@^7.3.1",
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.38.0",
-    "@neondatabase/serverless": "https://esm.sh/@neondatabase/serverless@^1.0.2"
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
 </head>
   <body>
     <div id="root"></div>
-  <script type="module" src="/index.tsx"></script>
-</body>
+  </body>
 </html>
